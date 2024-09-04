@@ -1,0 +1,15 @@
+/* styles.css */
+
+body{
+    margin: 0;
+    padding: 0;
+}
+#map {
+    width: 100vw;
+    height: 100vh;
+}
+.leaflet-zoom-anim
+.leaflet-zoom-animated {
+transition-timing-function: linear;
+transition-duration: 100ms;
+}
