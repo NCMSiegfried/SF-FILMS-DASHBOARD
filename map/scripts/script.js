@@ -50,16 +50,20 @@ function onEachFeature(feature, layer) {
 }
 
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
-            // Add the GeoJSON layer to the map
-            L.geoJson(data, {
-                        pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, geojsonMarkerOptions);
-            },
-        onEachFeature: function(feature, layer){
+    // Add the GeoJSON layer to the map
+    L.geoJson(data, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, geojsonMarkerOptions);
+        },
+        onEachFeature: function(feature, layer) {
             layer.bindPopup(
-            
-            "<b>Film: </b>" + feature.properties.Title);
+                //'<img src="https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/images/' + feature.properties.Title + ' ' + feature.properties['Release Year'] + ' poster' +'" style="width:100px;height:100px;"><br>' +
+                //'<img src="https://github.com/NCMSiegfried/SF-FILMS-DASHBOARD/blob/2c460b2c5b6c168fe00efdc4a64f5033102f1a60/map/images/180%202011%20poster/Image_1.jpg'+'" style="width:100px;height:100px;"><br>' +
+                '<img src="'map/images/180 2011 poster/Image_1.jpg'+'" style="width:100px;height:100px;"><br>' +
+                "<b>Film: </b>" + feature.properties.Title
+            );
         }
-        }).addTo(map);
-                });
+    }).addTo(map);
+});
+
 
