@@ -2,17 +2,23 @@
 
 // Initialize the map
 var map = L.map('map',{
-    scrollWheelZoom: false,
-    smoothWheelZoom: true,
-    smoothSensitivity: 1,
-    // 1 / 10th of the original zoom step
-    //zoomSnap: 0,
-    // Faster debounce time while zooming
-    //wheelDebounceTime: 100,
-    //zoomDelta:0.5,
-    //wheelPxPerZoomLevel:80
+    zoomControl: false
+//    scrollWheelZoom: false,
+//    smoothWheelZoom: true,
+//    smoothSensitivity: 1,
+//     1 / 10th of the original zoom step
+//    zoomSnap: 0,
+////     Faster debounce time while zooming
+//    wheelDebounceTime: 100,
+//    zoomDelta:0.5,
+//    wheelPxPerZoomLevel:80
     }).setView([37.773972, -122.431297], 12);
 map.scrollWheelZoom = true;
+
+L.control.zoom({
+     position:'topright'
+}).addTo(map);
+
 
 var bayAreaBounds = [
     [36.8, -123.3], // Southwest corner (latitude, longitude)
@@ -50,7 +56,9 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
                 return L.circleMarker(latlng, geojsonMarkerOptions);
             },
         onEachFeature: function(feature, layer){
-            layer.bindPopup("<b>Film: </b>" + feature.properties.Title);
+            layer.bindPopup(
+            
+            "<b>Film: </b>" + feature.properties.Title);
         }
         }).addTo(map);
                 });
