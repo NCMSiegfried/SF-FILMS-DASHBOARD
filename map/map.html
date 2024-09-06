@@ -15,6 +15,8 @@
     <script src="https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/scripts/SmoothWheelZoom.js"></script>
       <!-- styles -->
     <link rel="stylesheet" href="styles/styles.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
       <!-- AJAX-->
     <link href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet.css' rel='stylesheet' type='text/css'/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.5/leaflet-src.js"></script>
@@ -24,7 +26,14 @@
     </style>
   </head>
   <body>
-    <div id="map"></div>
+    <div id="map">
+        <!-- Floating side panel inside the map -->
+        <div class="side-panel" id="sidePanel">
+            <h2>Side Panel</h2>
+            <p>This panel floats on top of the map.</p>
+            <button id="toggle-btn">Toggle Map Center</button>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="

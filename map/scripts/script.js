@@ -2,16 +2,16 @@
 
 // Initialize the map
 var map = L.map('map',{
-    zoomControl: false
+//    zoomControl: false
 //    scrollWheelZoom: false,
 //    smoothWheelZoom: true,
 //    smoothSensitivity: 1,
 //     1 / 10th of the original zoom step
-//    zoomSnap: 0,
+    zoomSnap: 0,
 ////     Faster debounce time while zooming
-//    wheelDebounceTime: 100,
-//    zoomDelta:0.5,
-//    wheelPxPerZoomLevel:80
+    wheelDebounceTime: 100,
+    zoomDelta:0.5,
+    wheelPxPerZoomLevel:80
     }).setView([37.773972, -122.431297], 12);
 map.scrollWheelZoom = true;
 
@@ -43,27 +43,87 @@ var geojsonMarkerOptions = {
     fillOpacity: 0.8
 };
 
+var defaultMarkerOptions = {
+    radius: 3,
+    fillColor: "#DE3163",
+    color: "#000",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.8
+};
+
+var highlightMarkerOptions = {
+    radius: 8,
+    fillColor: "#FF6347", // Different color for highlight
+    color: "#000",
+    weight: 2,
+    opacity: 1,
+    fillOpacity: 1
+};
+var highlightedLayer = null;
+
+// Function to reset the highlight of all markers
+function resetHighlight() {
+    if (highlightedLayer) {
+        highlightedLayer.setStyle(defaultMarkerOptions);
+        highlightedLayer = null;
+    }
+}
+
 function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.popupContent) {
         layer.bindPopup(feature.properties.popupContent);
     }
 }
 
+// Function to update side panel with point details
+function updateSidePanel(properties, coords) {
+    var sidePanel = document.getElementById('sidePanel');
+    sidePanel.innerHTML = `
+        <img src="images/${properties.Title} ${properties['Release Year']} poster/Image_1.jpg" style="width:200px;height:300px;"><br>
+        <h2>${properties.Title}</h2>
+        <p><strong>Film: </strong> ${properties.Title}</p>
+        <p><strong>Year Released: </strong> ${properties['Release Year']}</p>
+        <p><strong>"images/${properties.Title} ${properties['Release Year']} poster/Image_1.jpg"</strong></p>
+    `;
+}
+
+//$.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
+//    // Add the GeoJSON layer to the map
+//    L.geoJson(data, {
+//        pointToLayer: function (feature, latlng) {
+//            return L.circleMarker(latlng, geojsonMarkerOptions);
+//        },
+//        onEachFeature: function(feature, layer) {
+//            layer.bindPopup(
+//                '<img src="images/' + feature.properties.Title + ' ' + feature.properties['Release Year'] + ' poster/Image_1.jpg" style="width:200px;height:300px;"><br>'+
+//                "<b>Film: </b>" + feature.properties.Title+
+//                "<b>Year Released: </b>" + feature.properties['Release Year']
+//            );
+//        }
+//    }).addTo(map);
+
+
+// Load GeoJSON using jQuery's $.getJSON
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
-    // Add the GeoJSON layer to the map
-    L.geoJson(data, {
+    // Load GeoJSON data into the map
+    var geojsonLayer = L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
             return L.circleMarker(latlng, geojsonMarkerOptions);
         },
-        onEachFeature: function(feature, layer) {
-            layer.bindPopup(
-                //'<img src="https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/images/' + feature.properties.Title + ' ' + feature.properties['Release Year'] + ' poster' +'" style="width:100px;height:100px;"><br>' +
-                //'<img src="https://github.com/NCMSiegfried/SF-FILMS-DASHBOARD/blob/2c460b2c5b6c168fe00efdc4a64f5033102f1a60/map/images/180%202011%20poster/Image_1.jpg'+'" style="width:100px;height:100px;"><br>' +
-                '<img src="'map/images/180 2011 poster/Image_1.jpg'+'" style="width:100px;height:100px;"><br>' +
-                "<b>Film: </b>" + feature.properties.Title
-            );
+        onEachFeature: function (feature, layer) {
+            // Attach click event listener to each feature (point)
+            layer.on('click', function () {
+                resetHighlight(); // Reset highlight of previously selected marker
+                highlightedLayer = layer; // Set the currently clicked layer as highlighted
+                layer.setStyle(highlightMarkerOptions);
+                var coords = feature.geometry.coordinates;
+                var properties = feature.properties;
+                // Update the side panel when the point is clicked
+                updateSidePanel(properties, coords);
+            });
         }
     }).addTo(map);
+}).fail(function() {
+    console.error('Error loading GeoJSON file');
 });
-
-
