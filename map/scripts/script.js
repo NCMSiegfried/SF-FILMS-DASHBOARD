@@ -1,66 +1,55 @@
 
 
-// Initialize the map
+// Initialize  map
 var map = L.map('map',{
-//    zoomControl: false
-//    scrollWheelZoom: false,
-//    smoothWheelZoom: true,
-//    smoothSensitivity: 1,
-//     1 / 10th of the original zoom step
+    zoomControl: false,
     zoomSnap: 0,
-////     Faster debounce time while zooming
     wheelDebounceTime: 100,
     zoomDelta:0.5,
     wheelPxPerZoomLevel:80
-    }).setView([37.773972, -122.431297], 12);
+    }).setView([37.76, -122.48], 12.5);
 map.scrollWheelZoom = true;
 
+//position zoom buttons on top right
 L.control.zoom({
-     position:'topright'
+    position:'topright',
 }).addTo(map);
 
-
+//Set Map Bounds
 var bayAreaBounds = [
-    [36.8, -123.3], // Southwest corner (latitude, longitude)
-    [38.6, -121.5]  // Northeast corner (latitude, longitude)
+    [36.8, -123.3],
+    [38.6, -121.5]
 ];
-
-// Set the max bounds
 map.setMaxBounds(bayAreaBounds);
 
+//Add 'smooth dark' tile layer from stadia maps with min zoom
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=8ff5f85d-e7f5-44fa-90bd-df95edd37619', {
   minZoom: 10,
   attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 }).addTo(map);
 
-
-var geojsonMarkerOptions = {
-    radius: 3,
-    fillColor: "#DE3163",
-    color: "#000",
-    weight: 1,
-    opacity: 1,
-    fillOpacity: 0.8
-};
-
+//create variables for map markers
 var defaultMarkerOptions = {
     radius: 3,
-    fillColor: "#DE3163",
+    fillColor: "#e6409e", //purplish
     color: "#000",
     weight: 1,
     opacity: 1,
     fillOpacity: 0.8
 };
-
+//create highlight colors
 var highlightMarkerOptions = {
-    radius: 8,
-    fillColor: "#FF6347", // Different color for highlight
+    radius: 5,
+    fillColor: "#ffde21", //yellowish
     color: "#000",
     weight: 2,
     opacity: 1,
     fillOpacity: 1
 };
+
 var highlightedLayer = null;
+var markersLayer;
+var geojsonData;
 
 // Function to reset the highlight of all markers
 function resetHighlight() {
@@ -69,7 +58,7 @@ function resetHighlight() {
         highlightedLayer = null;
     }
 }
-
+//function for pop up
 function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.popupContent) {
         layer.bindPopup(feature.properties.popupContent);
@@ -80,36 +69,48 @@ function onEachFeature(feature, layer) {
 function updateSidePanel(properties, coords) {
     var sidePanel = document.getElementById('sidePanel');
     sidePanel.innerHTML = `
-        <img src="images/${properties.Title} ${properties['Release Year']} poster/Image_1.jpg" style="width:200px;height:300px;"><br>
+        <p><a href="https://www.imdb.com/title/${properties.tconst}/" target= "_blank" rel="noopener noreferrer">
+            <img src="images/${properties.Title} ${properties['Release Year']} poster/Image_1.jpg"/>
+        </a></p>
         <h2>${properties.Title}</h2>
         <p><strong>Film: </strong> ${properties.Title}</p>
         <p><strong>Year Released: </strong> ${properties['Release Year']}</p>
-        <p><strong>"images/${properties.Title} ${properties['Release Year']} poster/Image_1.jpg"</strong></p>
+        <p>"${properties.tconst}"</p>
+        <button id="moreInfoButton" style="margin-top: 10px; padding: 8px 12px; background-color: #007bff; color: white; border: none; cursor: pointer;">
+            More Information
+        </button>
     `;
+        // Add event listener to the "More Information" button
+    document.getElementById('moreInfoButton').addEventListener('click', function() {
+        // Show additional details in the side panel
+        showMoreDetails(properties);
+    });
 }
 
-//$.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
-//    // Add the GeoJSON layer to the map
-//    L.geoJson(data, {
-//        pointToLayer: function (feature, latlng) {
-//            return L.circleMarker(latlng, geojsonMarkerOptions);
-//        },
-//        onEachFeature: function(feature, layer) {
-//            layer.bindPopup(
-//                '<img src="images/' + feature.properties.Title + ' ' + feature.properties['Release Year'] + ' poster/Image_1.jpg" style="width:200px;height:300px;"><br>'+
-//                "<b>Film: </b>" + feature.properties.Title+
-//                "<b>Year Released: </b>" + feature.properties['Release Year']
-//            );
-//        }
-//    }).addTo(map);
-
-
-// Load GeoJSON using jQuery's $.getJSON
+function showMoreDetails(properties,coords) {
+ var sidePanel = document.getElementById('sidePanel');
+ sidePanel.innerHTML = `
+     <div style="margin-top: 20px;">
+        <button id="back-button" style="margin-top: 10px; padding: 8px 12px; background-color: #007bff; color: white; border: none; cursor: pointer;">
+            Back
+        </button>
+         <p><strong>Director:</strong> ${properties['Production Company']}</p>
+         <p><strong>Cast:</strong> ${properties.Distributor}</p>
+         <p><strong>Synopsis:</strong> ${properties.Director}</p>
+     </div>
+ `;
+         // Add event listener to the "More Information" button
+    document.getElementById('back-button').addEventListener('click', function() {
+        // Show additional details in the side panel
+        updateSidePanel(properties, coords);
+    });
+}
+// Load GeoJSON from github, pass data through functions
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
     // Load GeoJSON data into the map
     var geojsonLayer = L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
-            return L.circleMarker(latlng, geojsonMarkerOptions);
+            return L.circleMarker(latlng, defaultMarkerOptions);
         },
         onEachFeature: function (feature, layer) {
             // Attach click event listener to each feature (point)
@@ -127,3 +128,15 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
 }).fail(function() {
     console.error('Error loading GeoJSON file');
 });
+
+
+
+// Prevent map clicks when interacting with the side panel
+document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
+    map.dragging.disable();  // Stops event from bubbling to the map
+});
+// Enable map clicks again when mouse is outside of panel
+document.getElementById('sidePanel').addEventListener('mouseout', function(event) {
+    map.dragging.enable();  // Stops event from bubbling to the map
+});
+
