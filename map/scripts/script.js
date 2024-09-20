@@ -6,7 +6,8 @@ var map = L.map('map',{
     zoomSnap: 0,
     wheelDebounceTime: 100,
     zoomDelta:0.5,
-    wheelPxPerZoomLevel:80
+    wheelPxPerZoomLevel:80,
+    scrollWheelZoom: false
     }).setView([37.76, -122.48], 12.5);
 map.scrollWheelZoom = true;
 
@@ -50,6 +51,7 @@ var highlightMarkerOptions = {
 var highlightedLayer = null;
 var markersLayer;
 var geojsonData;
+var additionalData;
 
 // Function to reset the highlight of all markers
 function resetHighlight() {
@@ -65,45 +67,76 @@ function onEachFeature(feature, layer) {
     }
 }
 
-// Function to update side panel with point details
-function updateSidePanel(properties, coords) {
+// Function to update the side panel with default content on page load
+function sidePanelHome() {
     var sidePanel = document.getElementById('sidePanel');
-    sidePanel.innerHTML = `
-        <p><a href="https://www.imdb.com/title/${properties.tconst}/" target= "_blank" rel="noopener noreferrer">
-            <img src="images/${properties.Title} ${properties['Release Year']} poster/Image_1.jpg"/>
-        </a></p>
-        <h2>${properties.Title}</h2>
-        <p><strong>Film: </strong> ${properties.Title}</p>
-        <p><strong>Year Released: </strong> ${properties['Release Year']}</p>
-        <p>"${properties.tconst}"</p>
-        <button id="moreInfoButton" style="margin-top: 10px; padding: 8px 12px; background-color: #007bff; color: white; border: none; cursor: pointer;">
-            More Information
-        </button>
-    `;
-        // Add event listener to the "More Information" button
-    document.getElementById('moreInfoButton').addEventListener('click', function() {
-        // Show additional details in the side panel
-        showMoreDetails(properties);
-    });
+    sidePanel.classList.remove('visible'); // Hide the panel before content change
+    setTimeout(() => {
+        sidePanel.innerHTML = `
+            <h2>Welcome to the SF Films Map</h2>
+            <p>Click on any marker to view film details.</p>
+        `;
+        sidePanel.classList.add('visible'); // Show the panel after content change
+    }, 300); // Match this duration to the CSS transition time
 }
 
-function showMoreDetails(properties,coords) {
- var sidePanel = document.getElementById('sidePanel');
- sidePanel.innerHTML = `
-     <div style="margin-top: 20px;">
-        <button id="back-button" style="margin-top: 10px; padding: 8px 12px; background-color: #007bff; color: white; border: none; cursor: pointer;">
-            Back
-        </button>
-         <p><strong>Director:</strong> ${properties['Production Company']}</p>
-         <p><strong>Cast:</strong> ${properties.Distributor}</p>
-         <p><strong>Synopsis:</strong> ${properties.Director}</p>
-     </div>
- `;
-         // Add event listener to the "More Information" button
-    document.getElementById('back-button').addEventListener('click', function() {
-        // Show additional details in the side panel
-        updateSidePanel(properties, coords);
-    });
+function updateSidePanel(properties, coords) {
+    var sidePanel = document.getElementById('sidePanel');
+    sidePanel.classList.remove('visible');
+    setTimeout(() => {
+        sidePanel.innerHTML = `
+            <button id="back-button">
+                Back
+            </button>
+            <p><a href="https://www.imdb.com/title/${properties.tconst}/" target="_blank" rel="noopener noreferrer">
+                <img src="images/${properties.tconst}/Image_1.jpg"/>
+            </a></p>
+            <h2>${properties.Title}</h2>
+            <p><strong>Film: </strong> ${properties.Title}</p>
+            <p><strong>Year Released: </strong> ${properties['Release Year']}</p>
+            <p>${properties.genres}</p>
+            <button id="MoreInfoButton">
+                More Information
+            </button>
+        `;
+        sidePanel.classList.add('visible'); // Show the panel after content change
+
+        // Add event listener to the "More Information" button
+        document.getElementById('MoreInfoButton').addEventListener('click', function() {
+            this.style.display = 'none'; // Hide the button
+            showMoreDetails(properties, coords);
+        });
+
+        // Add event listener to the "Back" button
+        document.getElementById('back-button').addEventListener('click', function() {
+            // Go back to the default side panel content
+            sidePanelHome();
+        });
+    }, 300); // Match this duration to the CSS transition time
+}
+
+function showMoreDetails(properties, coords) {
+    var sidePanel = document.getElementById('sidePanel');
+    sidePanel.classList.remove('visible'); // Hide the panel before content change
+    setTimeout(() => {
+        sidePanel.innerHTML += `
+            <div style="margin-top: 20px;">
+                <button id="back-button">
+                    Back
+                </button>
+                <p><strong>Director:</strong> ${properties['Production Company']}</p>
+                <p><strong>Cast:</strong> ${properties.Distributor}</p>
+                <p><strong>Synopsis:</strong> ${properties.Director}</p>
+            </div>
+        `;
+        sidePanel.classList.add('visible'); // Show the panel after content change
+
+        // Add event listener to the "Back" button
+        document.getElementById('back-button').addEventListener('click', function() {
+            // Go back to the previous state of the side panel
+            sidePanelHome(properties, coords);
+        });
+    }, 300); // Match this duration to the CSS transition time
 }
 // Load GeoJSON from github, pass data through functions
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
@@ -125,18 +158,30 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
             });
         }
     }).addTo(map);
+    sidePanelHome();
 }).fail(function() {
     console.error('Error loading GeoJSON file');
 });
 
-
+// Load the additional JSON file
+//$.getJSON("https://example.com/path/to/your/additionalData.json", function(data) {
+//    additionalData = data; // Store the loaded data in the variable
+//    console.log("Additional data loaded:", additionalData);
+//}).fail(function() {
+//    console.error('Error loading additional JSON file');
+//});
 
 // Prevent map clicks when interacting with the side panel
 document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
     map.dragging.disable();  // Stops event from bubbling to the map
+    map.doubleClickZoom.disable();
+    map.touchZoom.disable();
 });
 // Enable map clicks again when mouse is outside of panel
 document.getElementById('sidePanel').addEventListener('mouseout', function(event) {
     map.dragging.enable();  // Stops event from bubbling to the map
+    map.doubleClickZoom.enable();
+    map.touchZoom.enable();
+//    map.scrollWheelZoom.enable() //FIX
 });
 

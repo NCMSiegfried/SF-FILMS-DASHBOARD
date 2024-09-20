@@ -30,18 +30,28 @@ transition-duration: 100ms;
 .leaflet-control-zoom-in:hover {
   transform: scale(1.08);
 }
+
+#sidePanel {
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(100%); /* Start off-screen */
+}
+
+#sidePanel.visible {
+    transform: translateX(0); /* Slide into view */
+}
 /* Side panel */
 .side-panel {
     position: absolute;
     top: 3%;
     left: 2%;
     width: 20%;
-    height: 90%;
+    height: 90vh;
     background-color: #F2F2F2;
     padding: 1%;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     z-index: 5000; /* Ensure it's on top of the map */
+    overflow-y: auto;
 }
 .side-panel img {
   display: block;
@@ -85,6 +95,24 @@ transition-duration: 100ms;
     height: 100vh;
     width: 100vw;
     position: relative; /* Ensure the map is the relative container for the floating panel */
+}
+/* Back Button */
+#back-button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+/* More Info Button */
+#MoreInfoButton {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
 }
 
 /* Button to toggle side panel */
