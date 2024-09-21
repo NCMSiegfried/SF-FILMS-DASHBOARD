@@ -31,14 +31,6 @@ transition-duration: 100ms;
   transform: scale(1.08);
 }
 
-#sidePanel {
-    transition: transform 0.3s ease-in-out;
-    transform: translateX(100%); /* Start off-screen */
-}
-
-#sidePanel.visible {
-    transform: translateX(0); /* Slide into view */
-}
 /* Side panel */
 .side-panel {
     position: absolute;

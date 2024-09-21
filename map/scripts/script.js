@@ -51,7 +51,7 @@ var highlightMarkerOptions = {
 var highlightedLayer = null;
 var markersLayer;
 var geojsonData;
-var additionalData;
+var namesData;
 
 // Function to reset the highlight of all markers
 function resetHighlight() {
@@ -70,73 +70,60 @@ function onEachFeature(feature, layer) {
 // Function to update the side panel with default content on page load
 function sidePanelHome() {
     var sidePanel = document.getElementById('sidePanel');
-    sidePanel.classList.remove('visible'); // Hide the panel before content change
-    setTimeout(() => {
-        sidePanel.innerHTML = `
-            <h2>Welcome to the SF Films Map</h2>
-            <p>Click on any marker to view film details.</p>
-        `;
-        sidePanel.classList.add('visible'); // Show the panel after content change
-    }, 300); // Match this duration to the CSS transition time
+    sidePanel.innerHTML = `
+        <h2>Welcome to the SF Films Map</h2>
+        <p>Click on any marker to view film details.</p>
+    `;
 }
 
 function updateSidePanel(properties, coords) {
     var sidePanel = document.getElementById('sidePanel');
-    sidePanel.classList.remove('visible');
-    setTimeout(() => {
-        sidePanel.innerHTML = `
-            <button id="back-button">
-                Back
-            </button>
-            <p><a href="https://www.imdb.com/title/${properties.tconst}/" target="_blank" rel="noopener noreferrer">
-                <img src="images/${properties.tconst}/Image_1.jpg"/>
-            </a></p>
-            <h2>${properties.Title}</h2>
-            <p><strong>Film: </strong> ${properties.Title}</p>
-            <p><strong>Year Released: </strong> ${properties['Release Year']}</p>
-            <p>${properties.genres}</p>
-            <button id="MoreInfoButton">
-                More Information
-            </button>
-        `;
-        sidePanel.classList.add('visible'); // Show the panel after content change
+    sidePanel.innerHTML = `
+        <button id="back-button">
+            Back
+        </button>
+        <p><a href="https://www.imdb.com/title/${properties.tconst}/" target= "_blank" rel="noopener noreferrer">
+            <img src="images/${properties.tconst}/Image_1.jpg"/>
+        </a></p>
+        <h2>${properties.Title}</h2>
+        <p><strong>Film: </strong> ${properties.Title}</p>
+        <p><strong>Year Released: </strong> ${properties['Release Year']}</p>
+        <p>${properties.genres}</p>
+        <button id="MoreInfoButton">
+            More Information
+        </button>
+    `;
 
-        // Add event listener to the "More Information" button
-        document.getElementById('MoreInfoButton').addEventListener('click', function() {
-            this.style.display = 'none'; // Hide the button
-            showMoreDetails(properties, coords);
-        });
+    // Add event listener to the "More Information" button
+    document.getElementById('MoreInfoButton').addEventListener('click', function() {
+        // Hide the "More Information" button
+        this.style.display = 'none';
+        // Show additional details in the side panel
+        showMoreDetails(properties, coords);
+    });
 
-        // Add event listener to the "Back" button
-        document.getElementById('back-button').addEventListener('click', function() {
-            // Go back to the default side panel content
-            sidePanelHome();
-        });
-    }, 300); // Match this duration to the CSS transition time
+    // Add event listener to the "Back" button
+    document.getElementById('back-button').addEventListener('click', function() {
+        // Go back to the default side panel content
+        sidePanelHome();
+    });
 }
 
 function showMoreDetails(properties, coords) {
     var sidePanel = document.getElementById('sidePanel');
-    sidePanel.classList.remove('visible'); // Hide the panel before content change
-    setTimeout(() => {
-        sidePanel.innerHTML += `
-            <div style="margin-top: 20px;">
-                <button id="back-button">
-                    Back
-                </button>
-                <p><strong>Director:</strong> ${properties['Production Company']}</p>
-                <p><strong>Cast:</strong> ${properties.Distributor}</p>
-                <p><strong>Synopsis:</strong> ${properties.Director}</p>
-            </div>
-        `;
-        sidePanel.classList.add('visible'); // Show the panel after content change
+    sidePanel.innerHTML += `
+        <div style="margin-top: 20px;">
+            <p><strong>Director:</strong> ${properties['Production Company']}</p>
+            <p><strong>Cast:</strong> ${properties.Distributor}</p>
+            <p><strong>Synopsis:</strong> ${properties.Director}</p>
+        </div>
+    `;
 
-        // Add event listener to the "Back" button
-        document.getElementById('back-button').addEventListener('click', function() {
-            // Go back to the previous state of the side panel
-            sidePanelHome(properties, coords);
-        });
-    }, 300); // Match this duration to the CSS transition time
+    // Add event listener to the "Back" button
+    document.getElementById('back-button').addEventListener('click', function() {
+        // Go back to the previous state of the side panel
+        sidePanelHome();
+    });
 }
 // Load GeoJSON from github, pass data through functions
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
@@ -164,12 +151,13 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
 });
 
 // Load the additional JSON file
-//$.getJSON("https://example.com/path/to/your/additionalData.json", function(data) {
-//    additionalData = data; // Store the loaded data in the variable
-//    console.log("Additional data loaded:", additionalData);
-//}).fail(function() {
-//    console.error('Error loading additional JSON file');
-//});
+$.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/refs/heads/main/map/data/Names.json", function(data) {
+    namesData = data;
+    console.log("Additional data loaded:", namesData);
+}).fail(function(jqxhr, textStatus, error) {
+    var err = textStatus + ", " + error;
+    console.error('Error loading additional JSON file: ' + err);
+});
 
 // Prevent map clicks when interacting with the side panel
 document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
