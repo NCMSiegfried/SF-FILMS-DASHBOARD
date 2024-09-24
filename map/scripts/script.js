@@ -122,7 +122,7 @@ function showMoreDetails(properties, coords, namesData) {
             ${properties.director1_name ? `
                 <p><strong>Director(s):</strong>
                     <a href="#" onclick="showNameDetails('${properties.director1_nconst}', namesData)">${properties.director1_name}</a>
-                    ${properties.director2_name ? `, <a href="#" onclick="showNameDetails('${properties.director2_nconst}', namesData)">${properties.director2_name}</a>` : ''}
+                    ${properties.director2_name ? `, <a href="#" onclick="showNameDetails('${properties.director1_nconst}', namesData)">${properties.director2_name}</a>` : ''}
                 </p>` : ''
             }
         </div>
@@ -143,6 +143,9 @@ function showNameDetails(nconst, namesData) {
             <button id="back-button">
                 Back
             </button>
+            <p><a href="https://www.imdb.com/name/${nconst}/" target= "_blank" rel="noopener noreferrer">
+                <img src="images/${nconst}/Image_1.jpg"/>
+            </a></p>
             ${namesData[nconst].primaryName ? `<p>${namesData[nconst].primaryName}</p>` : ''}
             ${namesData[nconst].birthYear && namesData[nconst].birthYear !== 'null' ? `<p><strong>Birth Year:</strong> ${namesData[nconst].birthYear}</p>` : ''}
             ${namesData[nconst].deathYear && namesData[nconst].deathYear !== 'null' ? `<p><strong>Death Year:</strong> ${namesData[nconst].deathYear}</p>` : ''}
@@ -154,7 +157,7 @@ function showNameDetails(nconst, namesData) {
 
         // Add event listener to the "Back" button
         document.getElementById('back-button').addEventListener('click', function() {
-            // Go back to the previous state of the side panel
+            // Go back to the previous side panel state with film details
             sidePanelHome();
         });
     } else {
