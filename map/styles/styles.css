@@ -50,6 +50,8 @@ transition-duration: 100ms;
   margin-left: auto;
   margin-right: auto;
   width: 90%;
+  max-height: 33em;
+  object-fit: cover;
   transition: transform .2s;
   box-shadow: rgba(0, 0, 0, 0.9) 0px 5px 15px;
 }

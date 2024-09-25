@@ -111,6 +111,9 @@ function updateSidePanel(properties, coords, namesData) {
 }
 
 function showMoreDetails(properties, coords, namesData) {
+    var testing = properties.director1_nconst;
+    console.log("Additional data loaded:", testing);
+    console.log("Additional data loaded:", properties);
     var sidePanel = document.getElementById('sidePanel');
     sidePanel.innerHTML += `
         <div style="margin-top: 20px;">
@@ -121,12 +124,35 @@ function showMoreDetails(properties, coords, namesData) {
             ${properties.numVotes ? `<p><strong>Number of IMDB Votes:</strong> ${properties.numVotes}</p>` : ''}
             ${properties.director1_name ? `
                 <p><strong>Director(s):</strong>
-                    <a href="#" onclick="showNameDetails('${properties.director1_nconst}', namesData)">${properties.director1_name}</a>
-                    ${properties.director2_name ? `, <a href="#" onclick="showNameDetails('${properties.director1_nconst}', namesData)">${properties.director2_name}</a>` : ''}
+                    <span class="director-link" data-nconst="${properties.director1_nconst}">${properties.director1_name}</span>
+                    ${properties.director2_name ? `, <span class="director-link" data-nconst="${properties.director2_nconst}">${properties.director2_name}</span>` : ''}
+                </p>` : ''
+            }
+            ${properties.writer1_name ? `
+                <p><strong>Writer(s):</strong>
+                    <span class="writer-link" data-nconst="${properties.writer1_nconst}">${properties.writer1_name}</span>
+                    ${properties.writer2_name ? `, <span class="writer-link" data-nconst="${properties.writer2_nconst}">${properties.writer2_name}</span>` : ''}
+                    ${properties.writer3_name ? `, <span class="writer-link" data-nconst="${properties.writer3_nconst}">${properties.writer3_name}</span>` : ''}
                 </p>` : ''
             }
         </div>
     `;
+
+    // Adding event listeners for directors links
+    document.querySelectorAll('.director-link').forEach(function(element) {
+        element.addEventListener('click', function() {
+            var nconst = this.getAttribute('data-nconst');
+            showNameDetails(properties, coords, nconst, namesData);
+        });
+    });
+
+    // Adding event listeners for writers links
+    document.querySelectorAll('.writer-link').forEach(function(element) {
+        element.addEventListener('click', function() {
+            var nconst = this.getAttribute('data-nconst');
+            showNameDetails(properties, coords, nconst, namesData);
+        });
+    });
 
     // Add event listener to the "Back" button
     document.getElementById('back-button').addEventListener('click', function() {
@@ -135,7 +161,8 @@ function showMoreDetails(properties, coords, namesData) {
     });
 }
 
-function showNameDetails(nconst, namesData) {
+
+function showNameDetails(properties, coords, nconst, namesData) {
     // Check if the nconst exists in namesData and access the primaryName
     if (namesData[nconst]) {
         var sidePanel = document.getElementById('sidePanel');
@@ -147,18 +174,18 @@ function showNameDetails(nconst, namesData) {
                 <img src="images/${nconst}/Image_1.jpg"/>
             </a></p>
             ${namesData[nconst].primaryName ? `<p>${namesData[nconst].primaryName}</p>` : ''}
-            ${namesData[nconst].birthYear && namesData[nconst].birthYear !== 'null' ? `<p><strong>Birth Year:</strong> ${namesData[nconst].birthYear}</p>` : ''}
-            ${namesData[nconst].deathYear && namesData[nconst].deathYear !== 'null' ? `<p><strong>Death Year:</strong> ${namesData[nconst].deathYear}</p>` : ''}
+            ${namesData[nconst].birthYear && namesData[nconst].birthYear !== 'null' ? `<p><strong>Born:</strong> ${namesData[nconst].birthYear}</p>` : ''}
+            ${namesData[nconst].deathYear && namesData[nconst].deathYear !== 'null' ? `<p><strong>Death:</strong> ${namesData[nconst].deathYear}</p>` : ''}
             ${namesData[nconst].primaryProfession ? `<p><strong>Primary Professions:</strong> ${namesData[nconst].primaryProfession}</p>` : ''}
             ${namesData[nconst].KnowForTitleNames ? `<p><strong>Notable Works:</strong> ${namesData[nconst].KnowForTitleNames}</p>` : ''}
-
-
         `;
 
         // Add event listener to the "Back" button
         document.getElementById('back-button').addEventListener('click', function() {
             // Go back to the previous side panel state with film details
-            sidePanelHome();
+            updateSidePanel(properties, coords, namesData);
+            document.getElementById( 'MoreInfoButton' ).style.display = 'none';
+            showMoreDetails(properties, coords, namesData);
         });
     } else {
         console.error("Director details not found for nconst:", nconst);
