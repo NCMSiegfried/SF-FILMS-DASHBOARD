@@ -38,7 +38,7 @@ transition-duration: 100ms;
     left: 2%;
     width: 20%;
     height: 90vh;
-    background-color: #F2F2F2;
+    background-color: #3b3b3b;
     padding: 1%;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
@@ -107,6 +107,52 @@ transition-duration: 100ms;
     color: white;
     border: none;
     cursor: pointer;
+}
+/* Table */
+table {
+    margin-top: 25px;
+    text-align: center;
+    border: solid #222222;
+    border-radius:15px;
+    margin-left: auto;
+    margin-right: auto;
+    width:95%;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    background-color: #636363;
+    border-style: hidden;
+    border-collapse: collapse;
+}
+/* Table Cells*/
+td, th {
+    width: auto;
+    height: 10 em;
+
+}
+tr {
+    border-bottom: 1pt solid #D3D3D3;
+}
+/* First Table Cell*/
+th:first-of-type {
+  border-top-left-radius: 10px;
+}
+th:last-of-type {
+  border-top-right-radius: 10px;
+}
+tr:last-of-type td:first-of-type {
+  border-bottom-left-radius: 10px;
+}
+tr:last-of-type td:last-of-type {
+  border-bottom-right-radius: 10px;
+}
+/* Table Text */
+.th-text {
+    color: #FAF9F6	;
+}
+.cell1-text {
+    color: #FAF9F6	;
+}
+.cell2-text {
+    color: #FAF9F6	;
 }
 
 /* Button to toggle side panel */

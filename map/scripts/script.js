@@ -49,7 +49,6 @@ var highlightMarkerOptions = {
 };
 
 var highlightedLayer = null;
-var markersLayer;
 var geojsonData;
 var namesData;
 
@@ -85,15 +84,20 @@ function updateSidePanel(properties, coords, namesData) {
         <p><a href="https://www.imdb.com/title/${properties.tconst}/" target= "_blank" rel="noopener noreferrer">
             <img src="images/${properties.tconst}/Image_1.jpg"/>
         </a></p>
-        ${properties.Title ? `<h2>${properties.Title}</h2>` : ''}
-        ${properties.Title ? `<p><strong>Film: </strong> ${properties.Title}</p>` : ''}
-        ${properties['Release Year'] ? `<p><strong>Year Released: </strong> ${properties['Release Year']}</p>` : ''}
-        ${properties.genres ? `<p><strong>Genre(s): </strong>${properties.genres}</p>` : ''}
-        ${properties.Locations ? `<p><strong>Film Location: </strong>${properties.Locations}</p>` : ''}
+        <table>
+            <thead>
+                <tr>
+                    <th class="th-text" scope="col" colspan="2">${properties.Title || ''}</th>
+                </tr>
+            </thead>
+            <tbody id="detailsTableBody">
+            </tbody>
+        </table>
         <button id="MoreInfoButton">
             More Information
         </button>
     `;
+    appendMovieTable(properties);
 
     // Add event listener to the "More Information" button
     document.getElementById('MoreInfoButton').addEventListener('click', function() {
@@ -107,36 +111,127 @@ function updateSidePanel(properties, coords, namesData) {
     document.getElementById('back-button').addEventListener('click', function() {
         // Go back to the default side panel content
         sidePanelHome();
+        resetHighlight();
     });
+}
+
+function appendMovieTable(properties) {
+    var tableBody = document.getElementById('detailsTableBody');
+    if (properties['Release Year']) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Year Released</strong>";
+        cell2.innerHTML = properties['Release Year'];
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+    if (properties.genres) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Genre(s)</strong>";
+        cell2.innerHTML = properties.genres;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+
+    }
+    if (properties.Locations) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Location</strong>";
+        cell2.innerHTML = properties.Locations;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
 }
 
 function showMoreDetails(properties, coords, namesData) {
     var testing = properties.director1_nconst;
     console.log("Additional data loaded:", testing);
     console.log("Additional data loaded:", properties);
-    var sidePanel = document.getElementById('sidePanel');
-    sidePanel.innerHTML += `
-        <div style="margin-top: 20px;">
-            ${properties['Production Company'] ? `<p><strong>Production Company:</strong> ${properties['Production Company']}</p>` : ''}
-            ${properties.Distributor ? `<p><strong>Distributor:</strong> ${properties.Distributor}</p>` : ''}
-            ${properties.run_time ? `<p><strong>Run Time:</strong> ${properties.run_time} minutes</p>` : ''}
-            ${properties.avg_rating ? `<p><strong>Average IMDB Rating:</strong> ${properties.avg_rating}</p>` : ''}
-            ${properties.numVotes ? `<p><strong>Number of IMDB Votes:</strong> ${properties.numVotes}</p>` : ''}
-            ${properties.director1_name ? `
-                <p><strong>Director(s):</strong>
-                    <span class="director-link" data-nconst="${properties.director1_nconst}">${properties.director1_name}</span>
-                    ${properties.director2_name ? `, <span class="director-link" data-nconst="${properties.director2_nconst}">${properties.director2_name}</span>` : ''}
-                </p>` : ''
-            }
-            ${properties.writer1_name ? `
-                <p><strong>Writer(s):</strong>
-                    <span class="writer-link" data-nconst="${properties.writer1_nconst}">${properties.writer1_name}</span>
-                    ${properties.writer2_name ? `, <span class="writer-link" data-nconst="${properties.writer2_nconst}">${properties.writer2_name}</span>` : ''}
-                    ${properties.writer3_name ? `, <span class="writer-link" data-nconst="${properties.writer3_nconst}">${properties.writer3_name}</span>` : ''}
-                </p>` : ''
-            }
-        </div>
-    `;
+
+    // Get the table body by its ID (assuming the ID for the table body is 'detailsTableBody')
+    var tableBody = document.getElementById('detailsTableBody');
+
+    // Append additional rows to the table for new data
+    if (properties['Production Company']) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Production Company:</strong>";
+        cell2.innerHTML = properties['Production Company'];
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+
+    if (properties.Distributor) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Distributor:</strong>";
+        cell2.innerHTML = properties.Distributor;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+
+    if (properties.run_time) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Run Time:</strong>";
+        cell2.innerHTML = properties.run_time + " minutes";
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+
+    if (properties.avg_rating) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Average IMDB Rating:</strong>";
+        cell2.innerHTML = properties.avg_rating;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+
+    if (properties.numVotes_comma) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Number of IMDB Votes:</strong>";
+        cell2.innerHTML = properties.numVotes_comma;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+
+    if (properties.director1_name) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Director(s):</strong>";
+        cell2.innerHTML = `
+            <span class="director-link" data-nconst="${properties.director1_nconst}">${properties.director1_name}</span>
+            ${properties.director2_name ? `, <span class="director-link" data-nconst="${properties.director2_nconst}">${properties.director2_name}</span>` : ''}
+        `;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+
+    if (properties.writer1_name) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Writer(s):</strong>";
+        cell2.innerHTML = `
+            <span class="writer-link" data-nconst="${properties.writer1_nconst}">${properties.writer1_name}</span>
+            ${properties.writer2_name ? `, <span class="writer-link" data-nconst="${properties.writer2_nconst}">${properties.writer2_name}</span>` : ''}
+            ${properties.writer3_name ? `, <span class="writer-link" data-nconst="${properties.writer3_nconst}">${properties.writer3_name}</span>` : ''}
+        `;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
 
     // Adding event listeners for directors links
     document.querySelectorAll('.director-link').forEach(function(element) {
@@ -158,9 +253,49 @@ function showMoreDetails(properties, coords, namesData) {
     document.getElementById('back-button').addEventListener('click', function() {
         // Go back to the previous state of the side panel
         sidePanelHome();
+        resetHighlight();
     });
 }
 
+function appendNameTable(nconst, namesData) {
+    var tableBody = document.getElementById('detailsTableBody');
+    if (namesData[nconst].birthYear && namesData[nconst].birthYear !== 'null') {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Born</strong>";
+        cell2.innerHTML = namesData[nconst].birthYear;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+    if (namesData[nconst].deathYear && namesData[nconst].deathYear !== 'null') {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Death</strong>";
+        cell2.innerHTML = namesData[nconst].deathYear;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+    if (namesData[nconst].primaryProfession) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Primary Professions</strong>";
+        cell2.innerHTML = namesData[nconst].primaryProfession;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+    if (namesData[nconst].KnowForTitleNames) {
+        var row = tableBody.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<strong>Notable Works:</strong>";
+        cell2.innerHTML = namesData[nconst].KnowForTitleNames;
+        cell1.classList.add('cell1-text');
+        cell2.classList.add('cell2-text');
+    }
+}
 
 function showNameDetails(properties, coords, nconst, namesData) {
     // Check if the nconst exists in namesData and access the primaryName
@@ -173,12 +308,17 @@ function showNameDetails(properties, coords, nconst, namesData) {
             <p><a href="https://www.imdb.com/name/${nconst}/" target= "_blank" rel="noopener noreferrer">
                 <img src="images/${nconst}/Image_1.jpg"/>
             </a></p>
-            ${namesData[nconst].primaryName ? `<p>${namesData[nconst].primaryName}</p>` : ''}
-            ${namesData[nconst].birthYear && namesData[nconst].birthYear !== 'null' ? `<p><strong>Born:</strong> ${namesData[nconst].birthYear}</p>` : ''}
-            ${namesData[nconst].deathYear && namesData[nconst].deathYear !== 'null' ? `<p><strong>Death:</strong> ${namesData[nconst].deathYear}</p>` : ''}
-            ${namesData[nconst].primaryProfession ? `<p><strong>Primary Professions:</strong> ${namesData[nconst].primaryProfession}</p>` : ''}
-            ${namesData[nconst].KnowForTitleNames ? `<p><strong>Notable Works:</strong> ${namesData[nconst].KnowForTitleNames}</p>` : ''}
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2">${namesData[nconst].primaryName}</th>
+                    </tr>
+                </thead>
+                <tbody id="detailsTableBody">
+                </tbody>
+            </table>
         `;
+        appendNameTable(nconst, namesData);
 
         // Add event listener to the "Back" button
         document.getElementById('back-button').addEventListener('click', function() {
