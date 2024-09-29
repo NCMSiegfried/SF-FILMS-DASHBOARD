@@ -1,5 +1,3 @@
-
-
 // Initialize  map
 var map = L.map('map',{
     zoomControl: false,
@@ -51,6 +49,104 @@ var highlightMarkerOptions = {
 var highlightedLayer = null;
 var geojsonData;
 var namesData;
+var uniqueDirectors = new Set();
+var uniqueProdCompanies = new Set();
+
+
+// populate the directors dropdown
+function populateDirectorDropdown() {
+    var directorDropdown = document.getElementById("directorFilter");
+    uniqueDirectors = Array.from(uniqueDirectors).sort();
+
+    uniqueDirectors.forEach(function(director) {
+        var option = document.createElement("option");
+        option.value = director;
+        option.text = director;
+        directorDropdown.appendChild(option);
+    });
+}
+// populate the production companies dropdown
+function populateProdCompanyDropdown() {
+    var ProdCompanyDropdown = document.getElementById("prodCompanyFilter");
+    uniqueProdCompanies = Array.from(uniqueProdCompanies).sort();
+
+    uniqueProdCompanies.forEach(function(prodCompany) {
+        var option = document.createElement("option");
+        option.value = prodCompany;
+        option.text = prodCompany;
+        ProdCompanyDropdown.appendChild(option);
+    });
+}
+
+
+// Function to filter markers based on the selected director
+function filterMarkersByDirector(director) {
+    // Clear the existing layers before applying the filter
+    map.eachLayer(function(layer) {
+        if (layer instanceof L.CircleMarker) {
+            map.removeLayer(layer);
+        }
+    });
+
+    // Add the filtered markers
+    console.log(director)
+    L.geoJSON(geojsonData, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, defaultMarkerOptions);
+        },
+        filter: function(feature) {
+            // Show all markers if no director is selected
+            if (!director) return true;
+
+            // Otherwise, filter by the selected director
+            return feature.properties.director1_name === director || feature.properties.director2_name === director;
+        },
+        onEachFeature: function (feature, layer) {
+            layer.on('click', function () {
+                resetHighlight();
+                highlightedLayer = layer;
+                layer.setStyle(highlightMarkerOptions);
+                var coords = feature.geometry.coordinates;
+                var properties = feature.properties;
+                updateSidePanel(properties, coords, namesData);
+            });
+        }
+    }).addTo(map);
+}
+
+// Function to filter markers based on the selected production company
+function filterMarkersByProdCompany(prodCompany) {
+    // Clear the existing layers before applying the filter
+    map.eachLayer(function(layer) {
+        if (layer instanceof L.CircleMarker) {
+            map.removeLayer(layer);
+        }
+    });
+
+    // Add the filtered markers
+    L.geoJSON(geojsonData, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, defaultMarkerOptions);
+        },
+        filter: function(feature) {
+            // Show all markers if no director is selected
+            if (!prodCompany) return true;
+
+            // Otherwise, filter by the selected director
+            return feature["properties"]["Production Company"] === prodCompany;
+        },
+        onEachFeature: function (feature, layer) {
+            layer.on('click', function () {
+                resetHighlight();
+                highlightedLayer = layer;
+                layer.setStyle(highlightMarkerOptions);
+                var coords = feature.geometry.coordinates;
+                var properties = feature.properties;
+                updateSidePanel(properties, coords, namesData);
+            });
+        }
+    }).addTo(map);
+}
 
 // Function to reset the highlight of all markers
 function resetHighlight() {
@@ -72,7 +168,24 @@ function sidePanelHome() {
     sidePanel.innerHTML = `
         <h2>Welcome to the SF Films Map</h2>
         <p>Click on any marker to view film details.</p>
+        <p>Select Film by Director</p>
+        <select id="directorFilter">
+            <option value="">All Directors</option>
+        </select>
+        <select id="prodCompanyFilter">
+            <option value="">All Production Companies</option>
+        </select>
     `;
+    populateDirectorDropdown();
+    populateProdCompanyDropdown();
+    document.getElementById('directorFilter').addEventListener('change', function() {
+    var selectedDirector = this.value;
+    filterMarkersByDirector(selectedDirector);
+    });
+    document.getElementById('prodCompanyFilter').addEventListener('change', function() {
+    var selectedProdCompany = this.value;
+    filterMarkersByProdCompany(selectedProdCompany);
+    });
 }
 
 function updateSidePanel(properties, coords, namesData) {
@@ -93,9 +206,9 @@ function updateSidePanel(properties, coords, namesData) {
             <tbody id="detailsTableBody">
             </tbody>
         </table>
-        <button id="MoreInfoButton">
-            More Information
-        </button>
+        <div class="MoreInfoButton">
+            <button id="MoreInfoButton">More Information</button>
+        </div>
     `;
     appendMovieTable(properties);
 
@@ -152,85 +265,56 @@ function showMoreDetails(properties, coords, namesData) {
     console.log("Additional data loaded:", testing);
     console.log("Additional data loaded:", properties);
 
-    // Get the table body by its ID (assuming the ID for the table body is 'detailsTableBody')
     var tableBody = document.getElementById('detailsTableBody');
 
-    // Append additional rows to the table for new data
-    if (properties['Production Company']) {
+    // Function to add a new row with slide-down animation
+    function addRowWithSlideDown(label, value, delay, idx) {
         var row = tableBody.insertRow();
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Production Company:</strong>";
-        cell2.innerHTML = properties['Production Company'];
+        cell1.innerHTML = `<strong>${label}</strong>`;
+        cell2.innerHTML = value;
         cell1.classList.add('cell1-text');
         cell2.classList.add('cell2-text');
+    }
+    let delay = 0;
+    let idx = 0;
+
+    if (properties['Production Company']) {
+        addRowWithSlideDown("Production Company", properties['Production Company']);
     }
 
     if (properties.Distributor) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Distributor:</strong>";
-        cell2.innerHTML = properties.Distributor;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Distributor", properties.Distributor);
     }
 
     if (properties.run_time) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Run Time:</strong>";
-        cell2.innerHTML = properties.run_time + " minutes";
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Run Time", properties.run_time + " minutes");
     }
 
     if (properties.avg_rating) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Average IMDB Rating:</strong>";
-        cell2.innerHTML = properties.avg_rating;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Average IMDB Rating", properties.avg_rating);
     }
 
     if (properties.numVotes_comma) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Number of IMDB Votes:</strong>";
-        cell2.innerHTML = properties.numVotes_comma;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Number of IMDB Votes", properties.numVotes_comma);
     }
 
     if (properties.director1_name) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Director(s):</strong>";
-        cell2.innerHTML = `
+        var directorNames = `
             <span class="director-link" data-nconst="${properties.director1_nconst}">${properties.director1_name}</span>
             ${properties.director2_name ? `, <span class="director-link" data-nconst="${properties.director2_nconst}">${properties.director2_name}</span>` : ''}
         `;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Director(s)", directorNames);
     }
 
     if (properties.writer1_name) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Writer(s):</strong>";
-        cell2.innerHTML = `
+        var writerNames = `
             <span class="writer-link" data-nconst="${properties.writer1_nconst}">${properties.writer1_name}</span>
             ${properties.writer2_name ? `, <span class="writer-link" data-nconst="${properties.writer2_nconst}">${properties.writer2_name}</span>` : ''}
             ${properties.writer3_name ? `, <span class="writer-link" data-nconst="${properties.writer3_nconst}">${properties.writer3_name}</span>` : ''}
         `;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Writer(s)", writerNames);
     }
 
     // Adding event listeners for directors links
@@ -256,6 +340,7 @@ function showMoreDetails(properties, coords, namesData) {
         resetHighlight();
     });
 }
+
 
 function appendNameTable(nconst, namesData) {
     var tableBody = document.getElementById('detailsTableBody');
@@ -336,19 +421,30 @@ function showNameDetails(properties, coords, nconst, namesData) {
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/refs/heads/main/map/data/Names.json", function(data) {
     namesData = data;
     console.log("Additional data loaded:", namesData);
-}).fail(function(jqxhr, textStatus, error) {
+}).fail(function(textStatus, error) {
     var err = textStatus + ", " + error;
     console.error('Error loading additional JSON file: ' + err);
 });
 
 // Load GeoJSON from github, pass data through functions
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
+    geojsonData = data;
     // Load GeoJSON data into the map
     var geojsonLayer = L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
             return L.circleMarker(latlng, defaultMarkerOptions);
         },
         onEachFeature: function (feature, layer) {
+            // Extract director names and add them to the Set
+            if (feature.properties.director1_name) {
+                uniqueDirectors.add(feature.properties.director1_name);
+            }
+            if (feature.properties.director2_name) {
+                uniqueDirectors.add(feature.properties.director2_name);
+            }
+            if (feature["properties"]["Production Company"]) {
+                uniqueProdCompanies.add(feature["properties"]["Production Company"]);
+            }
             // Attach click event listener to each feature (point)
             layer.on('click', function () {
                 resetHighlight(); // Reset highlight of previously selected marker
@@ -366,6 +462,7 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
     console.error('Error loading GeoJSON file');
 });
 
+
 // Prevent map clicks when interacting with the side panel
 document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
     map.dragging.disable();  // Stops event from bubbling to the map
@@ -379,4 +476,5 @@ document.getElementById('sidePanel').addEventListener('mouseout', function(event
     map.touchZoom.enable();
 //    map.scrollWheelZoom.enable() //FIX
 });
+
 

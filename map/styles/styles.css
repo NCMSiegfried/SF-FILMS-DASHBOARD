@@ -38,7 +38,7 @@ transition-duration: 100ms;
     left: 2%;
     width: 20%;
     height: 90vh;
-    background-color: #3b3b3b;
+    background-color: #999999;
     padding: 1%;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
     border-radius: 8px;
@@ -94,20 +94,30 @@ transition-duration: 100ms;
 #back-button {
     margin-top: 10px;
     padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
+    background-color: #d3d3d3;
+    color: #555555;
     border: none;
     cursor: pointer;
 }
-/* More Info Button */
+
+/* Mo  re Info Button */
 #MoreInfoButton {
     margin-top: 10px;
     padding: 8px 12px;
-    background-color: #007bff;
-    color: white;
+    background-color: #d3d3d3;
+    border-radius:15px;
     border: none;
     cursor: pointer;
+    color: #555555;
 }
+.MoreInfoButton {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically, if needed */
+    margin-top: 20px; /* Optional: Add some space above the button */
+}
+
+
 /* Table */
 table {
     margin-top: 25px;
@@ -118,15 +128,14 @@ table {
     margin-right: auto;
     width:95%;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-    background-color: #636363;
+    background-color: #cccccc;
     border-style: hidden;
     border-collapse: collapse;
 }
 /* Table Cells*/
 td, th {
-    width: auto;
-    height: 10 em;
-
+    width:50%;
+    height:50%;
 }
 tr {
     border-bottom: 1pt solid #D3D3D3;
@@ -146,13 +155,13 @@ tr:last-of-type td:last-of-type {
 }
 /* Table Text */
 .th-text {
-    color: #FAF9F6	;
+    color: #555555;
 }
 .cell1-text {
-    color: #FAF9F6	;
+    color: #555555;
 }
 .cell2-text {
-    color: #FAF9F6	;
+    color: #555555;
 }
 
 /* Button to toggle side panel */
@@ -160,7 +169,7 @@ tr:last-of-type td:last-of-type {
     display: block;
     margin: 20px auto;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #d3d3d3;
     color: white;
     border: none;
     cursor: pointer;
