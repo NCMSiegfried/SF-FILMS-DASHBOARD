@@ -51,71 +51,49 @@ var geojsonData;
 var namesData;
 var uniqueDirectors = new Set();
 var uniqueProdCompanies = new Set();
+var selectedDirector = null;
+var selectedProdCompany = null;
+var uniqueDirectorsSelected = new Set();
+var uniqueProdCompaniesSelected = new Set();
 
-
-// populate the directors dropdown
-function populateDirectorDropdown() {
-    var directorDropdown = document.getElementById("directorFilter");
-    uniqueDirectors = Array.from(uniqueDirectors).sort();
-
-    uniqueDirectors.forEach(function(director) {
-        var option = document.createElement("option");
-        option.value = director;
-        option.text = director;
-        directorDropdown.appendChild(option);
+//TRIAL: POPULATE BOTH DROP DOWNS DYNAMICALLY
+function populateDropdown(dropdownId, dataSet, savedValue) {
+    const dropdown = document.getElementById(dropdownId);
+    const sortedData = Array.from(dataSet).sort();
+    dropdown.length = 0;
+    const option = document.createElement("option");
+    option.value = '';
+    if (dropdownId == "directorFilter"){
+        option.text = 'Select Director';
+        dropdown.appendChild(option);
+    } else if (dropdownId == "prodCompanyFilter"){
+        option.text = 'Select Production Company';
+        dropdown.appendChild(option);
+    }
+    dropdown.appendChild(option);
+    sortedData.forEach(function(item) {
+        const option = document.createElement("option");
+        option.value = item;
+        option.text = item;
+        dropdown.appendChild(option);
     });
-}
-// populate the production companies dropdown
-function populateProdCompanyDropdown() {
-    var ProdCompanyDropdown = document.getElementById("prodCompanyFilter");
-    uniqueProdCompanies = Array.from(uniqueProdCompanies).sort();
-
-    uniqueProdCompanies.forEach(function(prodCompany) {
-        var option = document.createElement("option");
-        option.value = prodCompany;
-        option.text = prodCompany;
-        ProdCompanyDropdown.appendChild(option);
-    });
-}
-
-
-// Function to filter markers based on the selected director
-function filterMarkersByDirector(director) {
-    // Clear the existing layers before applying the filter
-    map.eachLayer(function(layer) {
-        if (layer instanceof L.CircleMarker) {
-            map.removeLayer(layer);
-        }
-    });
-
-    // Add the filtered markers
-    console.log(director)
-    L.geoJSON(geojsonData, {
-        pointToLayer: function (feature, latlng) {
-            return L.circleMarker(latlng, defaultMarkerOptions);
-        },
-        filter: function(feature) {
-            // Show all markers if no director is selected
-            if (!director) return true;
-
-            // Otherwise, filter by the selected director
-            return feature.properties.director1_name === director || feature.properties.director2_name === director;
-        },
-        onEachFeature: function (feature, layer) {
-            layer.on('click', function () {
-                resetHighlight();
-                highlightedLayer = layer;
-                layer.setStyle(highlightMarkerOptions);
-                var coords = feature.geometry.coordinates;
-                var properties = feature.properties;
-                updateSidePanel(properties, coords, namesData);
-            });
-        }
-    }).addTo(map);
+//    const savedValue = localStorage.getItem(`selected${dropdownId}`);
+    if (savedValue) {
+        dropdown.value = savedValue;
+    }
 }
 
-// Function to filter markers based on the selected production company
-function filterMarkersByProdCompany(prodCompany) {
+// Use the function to populate both dropdowns
+function populateDropDowns() {
+    populateDropdown("directorFilter", uniqueDirectors, selectedDirector);
+    populateDropdown("prodCompanyFilter", uniqueProdCompanies, selectedProdCompany);
+}
+
+// Function to filter markers based on the selected director or production company
+function filterMarkers(director, prodCompany) {
+    uniqueProdCompaniesSelected.clear();
+    uniqueDirectorsSelected.clear();
+
     // Clear the existing layers before applying the filter
     map.eachLayer(function(layer) {
         if (layer instanceof L.CircleMarker) {
@@ -129,13 +107,35 @@ function filterMarkersByProdCompany(prodCompany) {
             return L.circleMarker(latlng, defaultMarkerOptions);
         },
         filter: function(feature) {
-            // Show all markers if no director is selected
-            if (!prodCompany) return true;
+            // Show all markers if neither director nor production company is selected
+            if (!director && !prodCompany) return true;
 
-            // Otherwise, filter by the selected director
-            return feature["properties"]["Production Company"] === prodCompany;
+            // Filter by director if selected
+            if (director) {
+                if (feature.properties.director1_name === director || feature.properties.director2_name === director) {
+                    return true;
+                }
+            }
+
+            // Filter by production company if selected
+            if (prodCompany) {
+                return feature.properties["Production Company"] === prodCompany;
+            }
+
+            // If no match, return false
+            return false;
         },
         onEachFeature: function (feature, layer) {
+            // Update unique production companies and directors for the dropdowns
+            if (feature.properties.director1_name) {
+                uniqueDirectorsSelected.add(feature.properties.director1_name);
+            }
+            if (feature.properties.director2_name) {
+                uniqueDirectorsSelected.add(feature.properties.director2_name);
+            }
+            uniqueProdCompaniesSelected.add(feature.properties["Production Company"]);
+
+            // Add click event to highlight the marker and update the side panel
             layer.on('click', function () {
                 resetHighlight();
                 highlightedLayer = layer;
@@ -146,7 +146,99 @@ function filterMarkersByProdCompany(prodCompany) {
             });
         }
     }).addTo(map);
+
+    // Update dropdowns with the unique values collected
+    populateDropdown("prodCompanyFilter", uniqueProdCompaniesSelected, selectedProdCompany);
+    populateDropdown("directorFilter", uniqueDirectorsSelected, selectedDirector);
+
+    // Log the updated sets for debugging
+    console.log("Filtered Production Companies:", uniqueProdCompaniesSelected);
+    console.log("Filtered Directors:", uniqueDirectorsSelected);
 }
+
+
+//// Function to filter markers based on the selected director
+//function filterMarkersByDirector(director) {
+//    uniqueProdCompaniesSelected.clear();
+//    // Clear the existing layers before applying the filter
+//    map.eachLayer(function(layer) {
+//        if (layer instanceof L.CircleMarker) {
+//            map.removeLayer(layer);
+//        }
+//    });
+//
+//    // Add the filtered markers
+//    console.log(director);
+//    L.geoJSON(geojsonData, {
+//        pointToLayer: function (feature, latlng) {
+//            return L.circleMarker(latlng, defaultMarkerOptions);
+//        },
+//        filter: function(feature) {
+//            // Show all markers if no director is selected
+//            if (!director) return true;
+//
+//            // Otherwise, filter by the selected director
+//            return feature.properties.director1_name === director || feature.properties.director2_name === director;
+//        },
+//        onEachFeature: function (feature, layer) {
+//            //POPULATE NEW DROPDOWN HERE
+//            uniqueProdCompaniesSelected.add(feature["properties"]["Production Company"]);
+//            layer.on('click', function () {
+//                resetHighlight();
+//                highlightedLayer = layer;
+//                layer.setStyle(highlightMarkerOptions);
+//                var coords = feature.geometry.coordinates;
+//                var properties = feature.properties;
+//                updateSidePanel(properties, coords, namesData);
+//            });
+//        }
+//    }).addTo(map);
+//    console.log(uniqueProdCompaniesSelected);
+//    populateDropdown("prodCompanyFilter", uniqueProdCompaniesSelected, selectedProdCompany);
+//}
+//
+//// Function to filter markers based on the selected production company
+//function filterMarkersByProdCompany(prodCompany) {
+//    uniqueDirectorsSelected.clear();
+//    // Clear the existing layers before applying the filter
+//    map.eachLayer(function(layer) {
+//        if (layer instanceof L.CircleMarker) {
+//            map.removeLayer(layer);
+//        }
+//    });
+//
+//    // Add the filtered markers
+//    L.geoJSON(geojsonData, {
+//        pointToLayer: function (feature, latlng) {
+//            return L.circleMarker(latlng, defaultMarkerOptions);
+//        },
+//        filter: function(feature) {
+//            // Show all markers if no director is selected
+//            if (!prodCompany) return true;
+//
+//            // Otherwise, filter by the selected director
+//            return feature["properties"]["Production Company"] === prodCompany;
+//        },
+//        onEachFeature: function (feature, layer) {
+//            if (feature.properties.director1_name) {
+//                uniqueDirectorsSelected.add(feature.properties.director1_name);
+//            }
+//            if (feature.properties.director2_name) {
+//                uniqueDirectorsSelected.add(feature.properties.director2_name);
+//            }
+//            layer.on('click', function () {
+//                resetHighlight();
+//                highlightedLayer = layer;
+//                layer.setStyle(highlightMarkerOptions);
+//                var coords = feature.geometry.coordinates;
+//                var properties = feature.properties;
+//                updateSidePanel(properties, coords, namesData);
+//            });
+//        }
+//    }).addTo(map);
+//    console.log(uniqueDirectorsSelected);
+//    populateDropdown("directorFilter", uniqueDirectorsSelected, selectedDirector);
+//}
 
 // Function to reset the highlight of all markers
 function resetHighlight() {
@@ -169,23 +261,25 @@ function sidePanelHome() {
         <h2>Welcome to the SF Films Map</h2>
         <p>Click on any marker to view film details.</p>
         <p>Select Film by Director</p>
-        <select id="directorFilter">
-            <option value="">All Directors</option>
+        <select class= "dropdown" id="directorFilter">
+            <option value="">Select Director</option>
         </select>
-        <select id="prodCompanyFilter">
-            <option value="">All Production Companies</option>
+        <select class= "dropdown" id="prodCompanyFilter">
+            <option value="">Select Production Company</option>
         </select>
     `;
-    populateDirectorDropdown();
-    populateProdCompanyDropdown();
+    populateDropDowns();
     document.getElementById('directorFilter').addEventListener('change', function() {
-    var selectedDirector = this.value;
-    filterMarkersByDirector(selectedDirector);
+    selectedDirector = this.value;
+    filterMarkers(selectedDirector, selectedProdCompany);
     });
     document.getElementById('prodCompanyFilter').addEventListener('change', function() {
-    var selectedProdCompany = this.value;
-    filterMarkersByProdCompany(selectedProdCompany);
+    selectedProdCompany = this.value;
+    filterMarkers(selectedDirector, selectedProdCompany);
     });
+    if (selectedDirector || selectedProdCompany){
+    filterMarkers(selectedDirector, selectedProdCompany);
+    };
 }
 
 function updateSidePanel(properties, coords, namesData) {
@@ -461,6 +555,8 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
 }).fail(function() {
     console.error('Error loading GeoJSON file');
 });
+
+
 
 
 // Prevent map clicks when interacting with the side panel

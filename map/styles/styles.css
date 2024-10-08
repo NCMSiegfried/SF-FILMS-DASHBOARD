@@ -54,6 +54,7 @@ transition-duration: 100ms;
   object-fit: cover;
   transition: transform .2s;
   box-shadow: rgba(0, 0, 0, 0.9) 0px 5px 15px;
+  border: blue;
 }
 .side-panel img:hover {
   transform: scale(1.04); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
@@ -164,16 +165,10 @@ tr:last-of-type td:last-of-type {
     color: #555555;
 }
 
-/* Button to toggle side panel */
-#toggle-btn {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    background-color: #d3d3d3;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
+/* Dropdown */
+.dropdown {
+    width: 15em;
+    background-color: #cccccc
 }
 
 
