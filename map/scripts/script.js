@@ -49,14 +49,30 @@ var highlightMarkerOptions = {
 var highlightedLayer = null;
 var geojsonData;
 var namesData;
+
+//FILTER VARIABLES
 var uniqueDirectors = new Set();
 var uniqueProdCompanies = new Set();
+var uniqueDistributors = new Set();
+var uniqueWriters = new Set();
+var uniqueGenres = new Set();
+
 var selectedDirector = null;
 var selectedProdCompany = null;
+var selectedDistributor = null;
+var selectedWriter = null;
+var selectedGenre = null;
+
 var uniqueDirectorsSelected = new Set();
 var uniqueProdCompaniesSelected = new Set();
+var uniqueDistributorsSelected = new Set();
+var uniqueWritersSelected = new Set();
+var uniqueGenresSelected = new Set();
 
-//TRIAL: POPULATE BOTH DROP DOWNS DYNAMICALLY
+var filterIndexing = new Set();
+
+
+//TRIAL: POPULATE DROP DOWNS DYNAMICALLY
 function populateDropdown(dropdownId, dataSet, savedValue) {
     const dropdown = document.getElementById(dropdownId);
     const sortedData = Array.from(dataSet).sort();
@@ -69,7 +85,17 @@ function populateDropdown(dropdownId, dataSet, savedValue) {
     } else if (dropdownId == "prodCompanyFilter"){
         option.text = 'Select Production Company';
         dropdown.appendChild(option);
+    } else if (dropdownId == "distributorFilter"){
+        option.text = 'Select Distributor';
+        dropdown.appendChild(option);
+    } else if (dropdownId == "writerFilter"){
+        option.text = 'Select Writer';
+        dropdown.appendChild(option);
+    } else if (dropdownId == "genreFilter"){
+        option.text = 'Select Genre';
+        dropdown.appendChild(option);
     }
+    //console.log(dropdownId, dataSet, savedValue, dropdown)
     dropdown.appendChild(option);
     sortedData.forEach(function(item) {
         const option = document.createElement("option");
@@ -77,7 +103,6 @@ function populateDropdown(dropdownId, dataSet, savedValue) {
         option.text = item;
         dropdown.appendChild(option);
     });
-//    const savedValue = localStorage.getItem(`selected${dropdownId}`);
     if (savedValue) {
         dropdown.value = savedValue;
     }
@@ -87,12 +112,18 @@ function populateDropdown(dropdownId, dataSet, savedValue) {
 function populateDropDowns() {
     populateDropdown("directorFilter", uniqueDirectors, selectedDirector);
     populateDropdown("prodCompanyFilter", uniqueProdCompanies, selectedProdCompany);
+    populateDropdown("distributorFilter", uniqueDistributors, selectedDistributor);
+    populateDropdown("writerFilter", uniqueWriters, selectedWriter);
+    populateDropdown("genreFilter", uniqueGenres, selectedGenre);
 }
 
 // Function to filter markers based on the selected director or production company
-function filterMarkers(director, prodCompany) {
+function filterMarkers(director, prodCompany, distributor, writer, genre) {
     uniqueProdCompaniesSelected.clear();
     uniqueDirectorsSelected.clear();
+    uniqueDistributorsSelected.clear();
+    uniqueWritersSelected.clear();
+    uniqueGenresSelected.clear();
 
     // Clear the existing layers before applying the filter
     map.eachLayer(function(layer) {
@@ -107,23 +138,43 @@ function filterMarkers(director, prodCompany) {
             return L.circleMarker(latlng, defaultMarkerOptions);
         },
         filter: function(feature) {
-            // Show all markers if neither director nor production company is selected
-            if (!director && !prodCompany) return true;
+            // Show all markers if no filters are selected
+            if (!director && !prodCompany && !distributor && !writer && !genre) return true;
 
-            // Filter by director if selected
+            // Check each filter condition independently
+            let matchesDirector = true;
+            let matchesProdCompany = true;
+            let matchesDistributor = true;
+            let matchesWriter = true;
+            let matchesGenre = true;
+
+            // Check for director match if a director is specified
             if (director) {
-                if (feature.properties.director1_name === director || feature.properties.director2_name === director) {
-                    return true;
-                }
+                matchesDirector = feature.properties.director1_name === director || feature.properties.director2_name === director;
             }
 
-            // Filter by production company if selected
+            // Check for production company match if a production company is specified
             if (prodCompany) {
-                return feature.properties["Production Company"] === prodCompany;
+                matchesProdCompany = feature.properties["Production Company"] === prodCompany;
             }
 
-            // If no match, return false
-            return false;
+            // Check for distributor match if a distributor is specified
+            if (distributor) {
+                matchesDistributor = feature.properties.Distributor === distributor;
+            }
+
+            // Check for writer match if a writer is specified
+            if (writer) {
+                matchesWriter = feature.properties.writer1_name === writer ||
+                                feature.properties.writer2_name === writer ||
+                                feature.properties.writer3_name === writer;
+                console.log(feature.properties.writer1_name === writer)
+            }
+            if (genre) {
+                matchesGenre = feature.properties.genres.includes(genre);
+            }
+            // Return true only if all specified filters match
+            return matchesDirector && matchesProdCompany && matchesDistributor && matchesWriter && matchesGenre;
         },
         onEachFeature: function (feature, layer) {
             // Update unique production companies and directors for the dropdowns
@@ -134,7 +185,23 @@ function filterMarkers(director, prodCompany) {
                 uniqueDirectorsSelected.add(feature.properties.director2_name);
             }
             uniqueProdCompaniesSelected.add(feature.properties["Production Company"]);
-
+            uniqueDistributorsSelected.add(feature.properties.Distributor);
+            if (feature.properties.writer1_name) {
+                uniqueWritersSelected.add(feature.properties.writer1_name);
+            }
+            if (feature.properties.writer2_name) {
+                uniqueWritersSelected.add(feature.properties.writer2_name);
+            }
+            if (feature.properties.writer3_name) {
+                uniqueWritersSelected.add(feature.properties.writer3_name);
+            }
+            if (feature.properties.genres) {
+                let genres = feature.properties.genres
+                genres = genres.split(',')
+                genres.forEach(function (item, index){
+                uniqueGenresSelected.add(item.trim())
+                })
+            }
             // Add click event to highlight the marker and update the side panel
             layer.on('click', function () {
                 resetHighlight();
@@ -150,95 +217,17 @@ function filterMarkers(director, prodCompany) {
     // Update dropdowns with the unique values collected
     populateDropdown("prodCompanyFilter", uniqueProdCompaniesSelected, selectedProdCompany);
     populateDropdown("directorFilter", uniqueDirectorsSelected, selectedDirector);
+    populateDropdown("distributorFilter", uniqueDistributorsSelected, selectedDistributor);
+    populateDropdown("writerFilter", uniqueWritersSelected, selectedWriter);
+    populateDropdown("genreFilter", uniqueGenresSelected, selectedGenre);
 
     // Log the updated sets for debugging
     console.log("Filtered Production Companies:", uniqueProdCompaniesSelected);
     console.log("Filtered Directors:", uniqueDirectorsSelected);
+    console.log("Filtered Distributor:", uniqueDistributorsSelected);
+    console.log("Filtered Writer:", uniqueWritersSelected);
+    console.log("Filtered Genre:", uniqueGenresSelected);
 }
-
-
-//// Function to filter markers based on the selected director
-//function filterMarkersByDirector(director) {
-//    uniqueProdCompaniesSelected.clear();
-//    // Clear the existing layers before applying the filter
-//    map.eachLayer(function(layer) {
-//        if (layer instanceof L.CircleMarker) {
-//            map.removeLayer(layer);
-//        }
-//    });
-//
-//    // Add the filtered markers
-//    console.log(director);
-//    L.geoJSON(geojsonData, {
-//        pointToLayer: function (feature, latlng) {
-//            return L.circleMarker(latlng, defaultMarkerOptions);
-//        },
-//        filter: function(feature) {
-//            // Show all markers if no director is selected
-//            if (!director) return true;
-//
-//            // Otherwise, filter by the selected director
-//            return feature.properties.director1_name === director || feature.properties.director2_name === director;
-//        },
-//        onEachFeature: function (feature, layer) {
-//            //POPULATE NEW DROPDOWN HERE
-//            uniqueProdCompaniesSelected.add(feature["properties"]["Production Company"]);
-//            layer.on('click', function () {
-//                resetHighlight();
-//                highlightedLayer = layer;
-//                layer.setStyle(highlightMarkerOptions);
-//                var coords = feature.geometry.coordinates;
-//                var properties = feature.properties;
-//                updateSidePanel(properties, coords, namesData);
-//            });
-//        }
-//    }).addTo(map);
-//    console.log(uniqueProdCompaniesSelected);
-//    populateDropdown("prodCompanyFilter", uniqueProdCompaniesSelected, selectedProdCompany);
-//}
-//
-//// Function to filter markers based on the selected production company
-//function filterMarkersByProdCompany(prodCompany) {
-//    uniqueDirectorsSelected.clear();
-//    // Clear the existing layers before applying the filter
-//    map.eachLayer(function(layer) {
-//        if (layer instanceof L.CircleMarker) {
-//            map.removeLayer(layer);
-//        }
-//    });
-//
-//    // Add the filtered markers
-//    L.geoJSON(geojsonData, {
-//        pointToLayer: function (feature, latlng) {
-//            return L.circleMarker(latlng, defaultMarkerOptions);
-//        },
-//        filter: function(feature) {
-//            // Show all markers if no director is selected
-//            if (!prodCompany) return true;
-//
-//            // Otherwise, filter by the selected director
-//            return feature["properties"]["Production Company"] === prodCompany;
-//        },
-//        onEachFeature: function (feature, layer) {
-//            if (feature.properties.director1_name) {
-//                uniqueDirectorsSelected.add(feature.properties.director1_name);
-//            }
-//            if (feature.properties.director2_name) {
-//                uniqueDirectorsSelected.add(feature.properties.director2_name);
-//            }
-//            layer.on('click', function () {
-//                resetHighlight();
-//                highlightedLayer = layer;
-//                layer.setStyle(highlightMarkerOptions);
-//                var coords = feature.geometry.coordinates;
-//                var properties = feature.properties;
-//                updateSidePanel(properties, coords, namesData);
-//            });
-//        }
-//    }).addTo(map);
-//    console.log(uniqueDirectorsSelected);
-//    populateDropdown("directorFilter", uniqueDirectorsSelected, selectedDirector);
-//}
 
 // Function to reset the highlight of all markers
 function resetHighlight() {
@@ -258,28 +247,91 @@ function onEachFeature(feature, layer) {
 function sidePanelHome() {
     var sidePanel = document.getElementById('sidePanel');
     sidePanel.innerHTML = `
-        <h2>Welcome to the SF Films Map</h2>
+        <h2>San Francisco Films Map</h2>
         <p>Click on any marker to view film details.</p>
         <p>Select Film by Director</p>
-        <select class= "dropdown" id="directorFilter">
-            <option value="">Select Director</option>
-        </select>
-        <select class= "dropdown" id="prodCompanyFilter">
-            <option value="">Select Production Company</option>
-        </select>
+        <div id="filterContainer">
+            <select class= "dropdown hidden" id="directorFilter">
+            </select>
+            <select class= "dropdown hidden" id="prodCompanyFilter">
+            </select>
+            <select class= "dropdown hidden" id="distributorFilter">
+            </select>
+            </select>
+            <select class= "dropdown hidden" id="writerFilter">
+            </select>
+            </select>
+            <select class= "dropdown hidden" id="genreFilter">
+            </select>
+        </div>
+        <div id="filterSelectorContainer">
+            <br/>
+            <select class="dropdown" id="filterSelector">
+                <option value="">--Select--</option>
+                <option value="directorFilter">Director</option>
+                <option value="prodCompanyFilter">Production Company</option>
+                <option value="distributorFilter">Distributor</option>
+                <option value="writerFilter">Writer</option>
+                <option value="genreFilter">Genre</option>
+            </select>
+        </div>
+        <br/>
+        <button id="reset-filter">
+            Reset Filter
+        </button>
     `;
     populateDropDowns();
     document.getElementById('directorFilter').addEventListener('change', function() {
-    selectedDirector = this.value;
-    filterMarkers(selectedDirector, selectedProdCompany);
+        selectedDirector = this.value;
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
     });
     document.getElementById('prodCompanyFilter').addEventListener('change', function() {
-    selectedProdCompany = this.value;
-    filterMarkers(selectedDirector, selectedProdCompany);
+        selectedProdCompany = this.value;
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
     });
-    if (selectedDirector || selectedProdCompany){
-    filterMarkers(selectedDirector, selectedProdCompany);
+    document.getElementById('distributorFilter').addEventListener('change', function() {
+        selectedDistributor = this.value;
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+    });
+    document.getElementById('writerFilter').addEventListener('change', function() {
+        selectedWriter = this.value;
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+    });
+    document.getElementById('genreFilter').addEventListener('change', function() {
+        selectedGenre = this.value;
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+    });
+    document.getElementById('reset-filter').addEventListener('click', function() {
+        selectedDirector = null;
+        selectedProdCompany = null;
+        selectedDistributor = null;
+        selectedWriter = null;
+        selectedGenre = null;
+        populateDropDowns();
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+    });
+    if (selectedDirector || selectedProdCompany || selectedDistributor || selectedWriter || selectedGenre){
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
     };
+    if (filterIndexing.size > 0) {
+        filterIndexing.forEach((val) => {
+          const dropdown = document.getElementById(val);
+          document.getElementById(val).style.display = 'block';
+          document.getElementById('filterContainer').appendChild(dropdown);
+          document.getElementById('filterSelector').querySelector(`option[value="${val}"]`).remove();
+        });
+    }
+    document.getElementById('filterSelector').addEventListener('change', function() {
+        const selectedValue = this.value;
+        const selectedDropdown = document.getElementById(selectedValue);
+        //Show filter and append it to filterContainer div
+        document.getElementById(selectedValue).style.display = 'block';
+        document.getElementById('filterContainer').appendChild(selectedDropdown);
+        // add selected value to 'filterIndexing' set to reload filters when back button is pressed
+        filterIndexing.add(selectedValue);
+        // remove selected value from the filterSelector
+        this.querySelector(`option[value="${selectedValue}"]`).remove();
+    });
 }
 
 function updateSidePanel(properties, coords, namesData) {
@@ -538,6 +590,25 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
             }
             if (feature["properties"]["Production Company"]) {
                 uniqueProdCompanies.add(feature["properties"]["Production Company"]);
+            }
+            if (feature.properties.Distributor) {
+                uniqueDistributors.add(feature.properties.Distributor);
+            }
+            if (feature.properties.writer1_name) {
+                uniqueWriters.add(feature.properties.writer1_name);
+            }
+            if (feature.properties.writer2_name) {
+                uniqueWriters.add(feature.properties.writer2_name);
+            }
+            if (feature.properties.writer3_name) {
+                uniqueWriters.add(feature.properties.writer3_name);
+            }
+            if (feature.properties.genres) {
+                let genres = feature.properties.genres
+                genres = genres.split(',')
+                genres.forEach(function (item, index){
+                uniqueGenres.add(item.trim())
+                })
             }
             // Attach click event listener to each feature (point)
             layer.on('click', function () {
