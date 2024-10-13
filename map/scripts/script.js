@@ -562,14 +562,12 @@ function showNameDetails(properties, coords, nconst, namesData) {
         console.error("Director details not found for nconst:", nconst);
     }
 }
-
 // Load the additional JSON file
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/refs/heads/main/map/data/Names.json", function(data) {
     namesData = data;
     console.log("Additional data loaded:", namesData);
-}).fail(function(textStatus, error) {
-    var err = textStatus + ", " + error;
-    console.error('Error loading additional JSON file: ' + err);
+}).fail(function(jqXHR, textStatus, errorThrown) {
+    console.error('Error loading JSON: ' + textStatus, errorThrown);
 });
 
 // Load GeoJSON from github, pass data through functions
