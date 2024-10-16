@@ -41,12 +41,13 @@ transition-duration: 100ms;
     background-color: #999999;
     padding: 1%;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
+    border-radius: 2px;
     z-index: 5000; /* Ensure it's on top of the map */
     overflow-y: auto;
     text-align: center;
     justify-content: center;
     cursor: default;
+    font-family: 'Trebuchet MS', 'Helvetica';
 }
 .side-panel img {
   display: block;
@@ -57,10 +58,14 @@ transition-duration: 100ms;
   object-fit: cover;
   transition: transform .2s;
   box-shadow: rgba(0, 0, 0, 0.9) 0px 5px 15px;
-  border: blue;
 }
 .side-panel img:hover {
-  transform: scale(1.04);
+    transform: scale(1.03);
+}
+
+.side-panel text{
+    font-family: 'Noto Sans';
+    font-size: 22px;
 }
 
 #filterContainer {
@@ -109,6 +114,8 @@ transition-duration: 100ms;
 }
 /* Back Button */
 #back-button {
+    display: flex;
+    justify-content: left; /* Center horizontally */
     margin-top: 10px;
     padding: 8px 12px;
     background-color: #d3d3d3;
@@ -122,7 +129,7 @@ transition-duration: 100ms;
     margin-top: 10px;
     padding: 8px 12px;
     background-color: #d3d3d3;
-    border-radius:15px;
+    border-radius:2px;
     border: none;
     cursor: pointer;
     color: #555555;
@@ -130,17 +137,16 @@ transition-duration: 100ms;
 .MoreInfoButton {
     display: flex;
     justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically, if needed */
-    margin-top: 20px; /* Optional: Add some space above the button */
+    align-items: center;
+    margin-top: 20px;
 }
 #reset-filter {
+    position:relative;
+    justify-content: center;
     background-color: #d3d3d3;
-    border-radius:15px;
-    margin-top: 25px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
+    border-radius:2px;
     cursor: pointer;
+    margin-top: 25px;
 
 }
 
@@ -150,7 +156,7 @@ table {
     margin-top: 25px;
     text-align: center;
     border: solid #222222;
-    border-radius:15px;
+    border-radius:2px;
     margin-left: auto;
     margin-right: auto;
     width:95%;
@@ -163,6 +169,7 @@ table {
 td, th {
     width:50%;
     height:50%;
+    padding: 5pt;
 }
 tr {
     border-bottom: 1pt solid #D3D3D3;
@@ -206,11 +213,19 @@ tr:last-of-type td:last-of-type {
 .hidden {
 display: none;
 }
+
 .writer-link {
     cursor:pointer;
 }
 .director-link {
     cursor:pointer;
+}
+.actor-link {
+    cursor:pointer;
+}
+
+h2 {
+    font-size: 26px;
 }
 
 

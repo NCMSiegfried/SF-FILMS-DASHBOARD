@@ -56,18 +56,23 @@ var uniqueProdCompanies = new Set();
 var uniqueDistributors = new Set();
 var uniqueWriters = new Set();
 var uniqueGenres = new Set();
+var uniqueStars = new Set();
 
 var selectedDirector = null;
 var selectedProdCompany = null;
 var selectedDistributor = null;
 var selectedWriter = null;
 var selectedGenre = null;
+var selectedStar = null;
+
 
 var uniqueDirectorsSelected = new Set();
 var uniqueProdCompaniesSelected = new Set();
 var uniqueDistributorsSelected = new Set();
 var uniqueWritersSelected = new Set();
 var uniqueGenresSelected = new Set();
+var uniqueStarsSelected = new Set();
+
 
 var filterIndexing = new Set();
 
@@ -94,6 +99,9 @@ function populateDropdown(dropdownId, dataSet, savedValue) {
     } else if (dropdownId == "genreFilter"){
         option.text = 'Select Genre';
         dropdown.appendChild(option);
+    } else if (dropdownId == "starFilter"){
+        option.text = 'Select Actor/Actress';
+        dropdown.appendChild(option);
     }
     //console.log(dropdownId, dataSet, savedValue, dropdown)
     dropdown.appendChild(option);
@@ -115,15 +123,17 @@ function populateDropDowns() {
     populateDropdown("distributorFilter", uniqueDistributors, selectedDistributor);
     populateDropdown("writerFilter", uniqueWriters, selectedWriter);
     populateDropdown("genreFilter", uniqueGenres, selectedGenre);
+    populateDropdown("starFilter", uniqueStars, selectedStar);
 }
 
 // Function to filter markers based on the selected director or production company
-function filterMarkers(director, prodCompany, distributor, writer, genre) {
+function filterMarkers(director, prodCompany, distributor, writer, genre, star) {
     uniqueProdCompaniesSelected.clear();
     uniqueDirectorsSelected.clear();
     uniqueDistributorsSelected.clear();
     uniqueWritersSelected.clear();
     uniqueGenresSelected.clear();
+    uniqueStarsSelected.clear()
 
     // Clear the existing layers before applying the filter
     map.eachLayer(function(layer) {
@@ -131,7 +141,6 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
             map.removeLayer(layer);
         }
     });
-
     // Add the filtered markers
     L.geoJSON(geojsonData, {
         pointToLayer: function (feature, latlng) {
@@ -139,7 +148,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
         },
         filter: function(feature) {
             // Show all markers if no filters are selected
-            if (!director && !prodCompany && !distributor && !writer && !genre) return true;
+            if (!director && !prodCompany && !distributor && !writer && !genre && !star) return true;
 
             // Check each filter condition independently
             let matchesDirector = true;
@@ -147,6 +156,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
             let matchesDistributor = true;
             let matchesWriter = true;
             let matchesGenre = true;
+            let matchesStar = true;
 
             // Check for director match if a director is specified
             if (director) {
@@ -168,13 +178,22 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
                 matchesWriter = feature.properties.writer1_name === writer ||
                                 feature.properties.writer2_name === writer ||
                                 feature.properties.writer3_name === writer;
-                console.log(feature.properties.writer1_name === writer)
             }
             if (genre) {
-                matchesGenre = feature.properties.genres.includes(genre);
+                if (feature.properties.genres){
+                    matchesGenre = feature.properties.genres.includes(genre);
+                } else {
+                    matchesGenre = false;
+                }
+            }
+            if (star) {
+                matchesStar = feature['properties']['Actor 1'] === star ||
+                    feature['properties']['Actor 2'] === star ||
+                    feature['properties']['Actor 3'] === star;
+                console.log(star)
             }
             // Return true only if all specified filters match
-            return matchesDirector && matchesProdCompany && matchesDistributor && matchesWriter && matchesGenre;
+            return matchesDirector && matchesProdCompany && matchesDistributor && matchesWriter && matchesGenre && matchesStar;
         },
         onEachFeature: function (feature, layer) {
             // Update unique production companies and directors for the dropdowns
@@ -202,6 +221,15 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
                 uniqueGenresSelected.add(item.trim())
                 })
             }
+            if (feature['properties']['Actor 1']) {
+                uniqueStarsSelected.add(feature['properties']['Actor 1']);
+            }
+            if (feature['properties']['Actor 2']) {
+                uniqueWritersSelected.add(feature['properties']['Actor 2']);
+            }
+            if (feature['properties']['Actor 3']) {
+                uniqueWritersSelected.add(feature['properties']['Actor 3']);
+            }
             // Add click event to highlight the marker and update the side panel
             layer.on('click', function () {
                 resetHighlight();
@@ -220,6 +248,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
     populateDropdown("distributorFilter", uniqueDistributorsSelected, selectedDistributor);
     populateDropdown("writerFilter", uniqueWritersSelected, selectedWriter);
     populateDropdown("genreFilter", uniqueGenresSelected, selectedGenre);
+    populateDropdown("starFilter", uniqueStarsSelected, selectedStar);
 
     // Log the updated sets for debugging
     console.log("Filtered Production Companies:", uniqueProdCompaniesSelected);
@@ -227,6 +256,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre) {
     console.log("Filtered Distributor:", uniqueDistributorsSelected);
     console.log("Filtered Writer:", uniqueWritersSelected);
     console.log("Filtered Genre:", uniqueGenresSelected);
+    console.log("Filtered Star:", uniqueStarsSelected);
 }
 
 // Function to reset the highlight of all markers
@@ -263,6 +293,8 @@ function sidePanelHome() {
             </select>
             <select class= "dropdown hidden" id="genreFilter">
             </select>
+            <select class= "dropdown hidden" id="starFilter">
+            </select>
         </div>
         <div id="filterSelectorContainer">
             <br/>
@@ -273,6 +305,7 @@ function sidePanelHome() {
                 <option value="distributorFilter">Distributor</option>
                 <option value="writerFilter">Writer</option>
                 <option value="genreFilter">Genre</option>
+                <option value="starFilter">Actor/Actress</option>
             </select>
         </div>
         <br/>
@@ -283,23 +316,27 @@ function sidePanelHome() {
     populateDropDowns();
     document.getElementById('directorFilter').addEventListener('change', function() {
         selectedDirector = this.value;
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     document.getElementById('prodCompanyFilter').addEventListener('change', function() {
         selectedProdCompany = this.value;
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     document.getElementById('distributorFilter').addEventListener('change', function() {
         selectedDistributor = this.value;
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     document.getElementById('writerFilter').addEventListener('change', function() {
         selectedWriter = this.value;
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     document.getElementById('genreFilter').addEventListener('change', function() {
         selectedGenre = this.value;
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
+    });
+    document.getElementById('starFilter').addEventListener('change', function() {
+        selectedStar = this.value;
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     document.getElementById('reset-filter').addEventListener('click', function() {
         selectedDirector = null;
@@ -307,11 +344,12 @@ function sidePanelHome() {
         selectedDistributor = null;
         selectedWriter = null;
         selectedGenre = null;
+        selectedStar = null;
         populateDropDowns();
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
-    if (selectedDirector || selectedProdCompany || selectedDistributor || selectedWriter || selectedGenre){
-        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre);
+    if (selectedDirector || selectedProdCompany || selectedDistributor || selectedWriter || selectedGenre || selectedStar){
+        filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     };
     if (filterIndexing.size > 0) {
         filterIndexing.forEach((val) => {
@@ -357,6 +395,19 @@ function updateSidePanel(properties, coords, namesData) {
         </div>
     `;
     appendMovieTable(properties);
+    // Adding event listeners for directors links
+    document.querySelectorAll('.director-link').forEach(function(element) {
+        element.addEventListener('click', function() {
+            var nconst = this.getAttribute('data-nconst');
+            showNameDetails(properties, coords, nconst, namesData);
+        });
+    });
+    document.querySelectorAll('.actor-link').forEach(function(element) {
+        element.addEventListener('click', function() {
+            var nconst = this.getAttribute('data-nconst');
+            showNameDetails(properties, coords, nconst, namesData);
+        });
+    });
 
     // Add event listener to the "More Information" button
     document.getElementById('MoreInfoButton').addEventListener('click', function() {
@@ -376,33 +427,47 @@ function updateSidePanel(properties, coords, namesData) {
 
 function appendMovieTable(properties) {
     var tableBody = document.getElementById('detailsTableBody');
-    if (properties['Release Year']) {
+
+    function addRowWithSlideDown(label, value, delay, idx) {
         var row = tableBody.insertRow();
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Year Released</strong>";
-        cell2.innerHTML = properties['Release Year'];
+        cell1.innerHTML = `<strong>${label}</strong>`;
+        cell2.innerHTML = value;
         cell1.classList.add('cell1-text');
         cell2.classList.add('cell2-text');
+    }
+    let delay = 0;
+    let idx = 0;
+    if (properties['Release Year']) {
+        addRowWithSlideDown("Release Year", properties['Release Year']);
+    }
+    if (properties['Season']) {
+        addRowWithSlideDown("Season", properties['Season']);
+    }
+    if (properties['Episode']) {
+        addRowWithSlideDown("Episode", properties['Episode']);
+    }
+    if (properties.director1_name) {
+        var directorNames = `
+            <span class="director-link" data-nconst="${properties.director1_nconst}">${properties.director1_name}</span>
+            ${properties.director2_name ? `, <span class="director-link" data-nconst="${properties.director2_nconst}">${properties.director2_name}</span>` : ''}
+        `;
+        addRowWithSlideDown("Director(s)", directorNames);
+    }
+    if (properties['Actor 1']) {
+        var actorNames = `
+            <span class="actor-link" data-nconst="${properties.actor1nconst}">${properties['Actor 1']}</span>
+            ${properties['Actor 2'] ? `, <span class="actor-link" data-nconst="${properties.actor2nconst}">${properties['Actor 2']}</span>` : ''}
+            ${properties['Actor 3'] ? `, <span class="actor-link" data-nconst="${properties.actor3nconst}">${properties['Actor 3']}</span>` : ''}
+        `;
+        addRowWithSlideDown("Stars", actorNames);
     }
     if (properties.genres) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Genre(s)</strong>";
-        cell2.innerHTML = properties.genres;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
-
+        addRowWithSlideDown("Genre(s)", properties.genres);
     }
     if (properties.Locations) {
-        var row = tableBody.insertRow();
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        cell1.innerHTML = "<strong>Location</strong>";
-        cell2.innerHTML = properties.Locations;
-        cell1.classList.add('cell1-text');
-        cell2.classList.add('cell2-text');
+        addRowWithSlideDown("Location", properties.Locations);
     }
 }
 
@@ -446,14 +511,6 @@ function showMoreDetails(properties, coords, namesData) {
         addRowWithSlideDown("Number of IMDB Votes", properties.numVotes_comma);
     }
 
-    if (properties.director1_name) {
-        var directorNames = `
-            <span class="director-link" data-nconst="${properties.director1_nconst}">${properties.director1_name}</span>
-            ${properties.director2_name ? `, <span class="director-link" data-nconst="${properties.director2_nconst}">${properties.director2_name}</span>` : ''}
-        `;
-        addRowWithSlideDown("Director(s)", directorNames);
-    }
-
     if (properties.writer1_name) {
         var writerNames = `
             <span class="writer-link" data-nconst="${properties.writer1_nconst}">${properties.writer1_name}</span>
@@ -462,14 +519,6 @@ function showMoreDetails(properties, coords, namesData) {
         `;
         addRowWithSlideDown("Writer(s)", writerNames);
     }
-
-    // Adding event listeners for directors links
-    document.querySelectorAll('.director-link').forEach(function(element) {
-        element.addEventListener('click', function() {
-            var nconst = this.getAttribute('data-nconst');
-            showNameDetails(properties, coords, nconst, namesData);
-        });
-    });
 
     // Adding event listeners for writers links
     document.querySelectorAll('.writer-link').forEach(function(element) {
@@ -508,7 +557,7 @@ function appendNameTable(nconst, namesData) {
         cell1.classList.add('cell1-text');
         cell2.classList.add('cell2-text');
     }
-    if (namesData[nconst].primaryProfession) {
+    if (namesData[nconst].primaryProfession && namesData[nconst].primaryProfession !== 'null') {
         var row = tableBody.insertRow();
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
@@ -517,7 +566,7 @@ function appendNameTable(nconst, namesData) {
         cell1.classList.add('cell1-text');
         cell2.classList.add('cell2-text');
     }
-    if (namesData[nconst].KnowForTitleNames) {
+    if (namesData[nconst].KnowForTitleNames && namesData[nconst].primaryProfession !== 'null') {
         var row = tableBody.insertRow();
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
@@ -607,6 +656,15 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
                 genres.forEach(function (item, index){
                 uniqueGenres.add(item.trim())
                 })
+            }
+            if (feature["properties"]["Actor 1"]) {
+                uniqueStars.add(feature["properties"]["Actor 1"]);
+            }
+            if (feature["properties"]["Actor 2"]) {
+                uniqueStars.add(feature["properties"]["Actor 2"]);
+            }
+            if (feature["properties"]["Actor 3"]) {
+                uniqueStars.add(feature["properties"]["Actor 3"]);
             }
             // Attach click event listener to each feature (point)
             layer.on('click', function () {
