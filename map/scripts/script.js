@@ -76,6 +76,28 @@ var uniqueStarsSelected = new Set();
 
 var filterIndexing = new Set();
 
+//SLIDE SHOW FUNCTIONS
+// Next/previous controls
+var slideIndex = 1;
+function plusSlides(n) {
+  showSlides(slideIndex += n);
+}
+
+// Thumbnail image controls
+function currentSlide(n) {
+  showSlides(slideIndex = n);
+}
+
+function showSlides(n) {
+  let i;
+  let slides = document.getElementsByClassName("slide");
+  if (n > slides.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = slides.length}
+  for (i = 0; i < slides.length; i++) {
+    slides[i].style.display = "none";
+  }
+  slides[slideIndex-1].style.display = "block";
+}
 
 //TRIAL: POPULATE DROP DOWNS DYNAMICALLY
 function populateDropdown(dropdownId, dataSet, savedValue) {
@@ -279,7 +301,72 @@ function sidePanelHome() {
     sidePanel.innerHTML = `
         <h2>San Francisco Films Map</h2>
         <p>Click on any marker to view film details.</p>
-        <p>Select Film by Director</p>
+        <div id="slideShowContainer">
+            <div class="slide fade">
+                <div class="numbertext">1 / 15</div>
+                <img src="images/_HomePanelImages/BullitChaseIMG.jpg" alt="Image 1" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">2 / 15</div>
+                <img src="images/_HomePanelImages/ExperimentInTerror_FishermansWharf.jpeg" alt="Image 2" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">3 / 15</div>
+                <img src="images/_HomePanelImages/Vertigo_Fort_Point.jpg" alt="Image 3" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">4 / 15</div>
+                <img src="images/_HomePanelImages/AlwaysBeMyMaybe_Pier7.png" alt="Image 4" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">5 / 15</div>
+                <img src="images/_HomePanelImages/ChanIsMissing.png" alt="Image 5" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">6 / 15</div>
+                <img src="images/_HomePanelImages/HaroldMaude_SutroBaths.png" alt="Image 6" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">7 / 15</div>
+                <img src="images/_HomePanelImages/HERBIERIDESAGAINIMG.jpg" alt="Image 7" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">8 / 15</div>
+                <img src="images/_HomePanelImages/houseOnTelegraphHill.jpeg" alt="Image 8" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">9 / 15</div>
+                <img src="images/_HomePanelImages/InvasionOfTheBodySnatchers_DeptofHealth.png" alt="Image 9" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">10 / 15</div>
+                <img src="images/_HomePanelImages/PlayItAgainSamAirport.png" alt="Image 10" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">11 / 15</div>
+                <img src="images/_HomePanelImages/PursuitofHappyness_GlenParkSubway.png" alt="Image 11" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">12 / 15</div>
+                <img src="images/_HomePanelImages/StarTrekGoldenGateBridge.png" alt="Image 12" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">13 / 15</div>
+                <img src="images/_HomePanelImages/STEVEMCQUEEN_TaylorSt.jpg" alt="Image 13" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">14 / 15</div>
+                <img src="images/_HomePanelImages/TheConversation_FinancialDistrict.jpg" alt="Image 14" style="width:100%">
+            </div>
+            <div class="slide fade">
+                <div class="numbertext">15 / 15</div>
+                <img src="images/_HomePanelImages/TheLineUpWarMemoralOpera.jpeg" alt="Image 15" style="width:100%">
+            </div>
+            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+            <a class="next"onclick="plusSlides(1)">&#10095;</a>
+
+        </div>
+        <p>Or add a filter</p>
         <div id="filterContainer">
             <select class= "dropdown hidden" id="directorFilter">
             </select>
@@ -299,7 +386,7 @@ function sidePanelHome() {
         <div id="filterSelectorContainer">
             <br/>
             <select class="dropdown" id="filterSelector">
-                <option value="">--Select--</option>
+                <option value="">--Add Filter--</option>
                 <option value="directorFilter">Director</option>
                 <option value="prodCompanyFilter">Production Company</option>
                 <option value="distributorFilter">Distributor</option>
@@ -370,21 +457,22 @@ function sidePanelHome() {
         // remove selected value from the filterSelector
         this.querySelector(`option[value="${selectedValue}"]`).remove();
     });
+    showSlides(slideIndex);
 }
 
 function updateSidePanel(properties, coords, namesData) {
     var sidePanel = document.getElementById('sidePanel');
     sidePanel.innerHTML = `
-        <button id="back-button">
-            Back
+        <button class= "back-button" id="back-button">
+            <span class="arrow"></span> Back
         </button>
         <p><a href="https://www.imdb.com/title/${properties.tconst}/" target= "_blank" rel="noopener noreferrer">
-            <img src="images/${properties.tconst}/Image_1.jpg"/>
+            <img id= "selectedImage" src="images/${properties.tconst}/Image_1.jpg"/>
         </a></p>
         <table>
             <thead>
                 <tr>
-                    <th class="th-text" scope="col" colspan="2">${properties.Title || ''}</th>
+                    <th class="th-text th-header" scope="col" style= "color:#F5F5F5; font-size:150%; background-color: #707070" colspan="2"><div style= "border: 2px solid #505050;margin: -5pt;">${properties.Title || ''}</div></th>
                 </tr>
             </thead>
             <tbody id="detailsTableBody">
@@ -582,11 +670,11 @@ function showNameDetails(properties, coords, nconst, namesData) {
     if (namesData[nconst]) {
         var sidePanel = document.getElementById('sidePanel');
         sidePanel.innerHTML = `
-            <button id="back-button">
-                Back
+            <button class= "back-button" id="back-button">
+                <span class="arrow"></span> Back
             </button>
             <p><a href="https://www.imdb.com/name/${nconst}/" target= "_blank" rel="noopener noreferrer">
-                <img src="images/${nconst}/Image_1.jpg"/>
+                <img id="selectedImage" src="images/${nconst}/Image_1.jpg"/>
             </a></p>
             <table>
                 <thead>

@@ -49,18 +49,19 @@ transition-duration: 100ms;
     cursor: default;
     font-family: 'Trebuchet MS', 'Helvetica';
 }
+
 .side-panel img {
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
   width: 90%;
   max-height: 33em;
   object-fit: cover;
-  transition: transform .2s;
   box-shadow: rgba(0, 0, 0, 0.9) 0px 5px 15px;
+  transition: transform .2s;
 }
-.side-panel img:hover {
-    transform: scale(1.03);
+
+#selectedImage:hover{
+    transform: scale(1.02);
 }
 
 .side-panel text{
@@ -97,7 +98,10 @@ transition-duration: 100ms;
     z-index: 5000; /* Ensure it's on top of the map */
 }
 #git-link:hover {
-  transform: scale(1.15); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+  transform: scale(1.10); /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+}
+#git-link:hover img{
+  fill: #F2F2F2;
 }
 #git-link img {
     padding:10%;
@@ -105,7 +109,9 @@ transition-duration: 100ms;
     height: 80%;
     object-fit: scale-down;
 }
-
+#git-linktrial{
+    z-index:5000;
+}
 /* Map container styles */
 #map {
     height: 100vh;
@@ -118,21 +124,67 @@ transition-duration: 100ms;
     justify-content: left; /* Center horizontally */
     margin-top: 10px;
     padding: 8px 12px;
+    background-color: transparent;
+    color: #d3d3d3;
+    border: 3px solid #d3d3d3;
+    cursor: pointer;
+    transition: all .3s ease;
+    font-weight: bold;
+    align-items: center;
+}
+#back-button:hover {
     background-color: #d3d3d3;
     color: #555555;
-    border: none;
-    cursor: pointer;
+    border: 3px solid #555555;
+}
+.back-button > .arrow {
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #d3d3d3;
+    border-bottom: 2px solid #d3d3d3;
+    position: relative;
+    transform: rotate(135deg);
+    margin: 0 6px;
+    transition: all .3s ease;
+}
+.back-button > .arrow::before {
+    display: block;
+    background-color: #555555;
+    width: 0px;
+    transform-origin: middle;
+    height: 5px;
+    position: absolute;
+    opacity: 1;
+    bottom: calc(-2px / 2);
+    transform: rotate(135deg);
+    transition: all .3s ease;
+    content: "";
+    right: 0;
+}
+
+.back-button:hover > .arrow {
+    transform: rotate(135deg) translate(2px, 2px);
+    border-color: text-hover-color;
+    border-right: 2px solid #555555;
+    border-bottom: 2px solid #555555;
+}
+
+.back-button:hover > .arrow::before {
+    opacity: 1;
+    width: 0px;
 }
 
 /* Mo  re Info Button */
 #MoreInfoButton {
     margin-top: 10px;
     padding: 8px 12px;
-    background-color: #d3d3d3;
+    background-color: transparent;
     border-radius:2px;
-    border: none;
+    border: 3px solid #d3d3d3;
     cursor: pointer;
-    color: #555555;
+    color:#d3d3d3;
+    transition: all .3s ease;
+    font-weight: bold;
 }
 .MoreInfoButton {
     display: flex;
@@ -140,6 +192,13 @@ transition-duration: 100ms;
     align-items: center;
     margin-top: 20px;
 }
+#MoreInfoButton:hover{
+    color: #555555;
+    background-color: #d3d3d3;
+    border: 3px solid #555555;
+
+}
+
 #reset-filter {
     position:relative;
     justify-content: center;
@@ -147,9 +206,20 @@ transition-duration: 100ms;
     border-radius:2px;
     cursor: pointer;
     margin-top: 25px;
+    padding: 8px 12px;
+    background-color: transparent;
+    border: 3px solid #d3d3d3;
+    cursor: pointer;
+    color:#d3d3d3;
+    transition: all .3s ease;
+    font-weight: bold;
 
 }
-
+#reset-filter:hover{
+    color: #555555;
+    background-color: #d3d3d3;
+    border: 3px solid #555555;
+}
 
 /* Table */
 table {
@@ -166,6 +236,11 @@ table {
     border-collapse: collapse;
 }
 /* Table Cells*/
+th-header div{
+ border: 1px solid white;
+ padding: 5pt;
+}
+
 td, th {
     width:50%;
     height:50%;
@@ -176,16 +251,16 @@ tr {
 }
 /* First Table Cell*/
 th:first-of-type {
-  border-top-left-radius: 10px;
+  border-top-left-radius: 2px;
 }
 th:last-of-type {
-  border-top-right-radius: 10px;
+  border-top-right-radius: 2px;
 }
 tr:last-of-type td:first-of-type {
-  border-bottom-left-radius: 10px;
+  border-bottom-left-radius: 2px;
 }
 tr:last-of-type td:last-of-type {
-  border-bottom-right-radius: 10px;
+  border-bottom-right-radius: 2px;
 }
 /* Table Text */
 .th-text {
@@ -200,16 +275,31 @@ tr:last-of-type td:last-of-type {
 
 /* Dropdown */
 .dropdown {
+    margin-top: 10px
+    margin-bottom: 10px
     display: flex;
-    width: 15em;
-    background-color: #cccccc;
+    width: 20em;
+    padding: 6px 10px;
+    background-color: #d3d3d3;
     text-align: center;
     justify-content: center;
+    border-radius:2px;
+    border: 2px solid #505050;
+    cursor: pointer;
+    color:#555555;
+    font-size:110%;
+    font-weight: bold;
 }
 .dropdown-container {
     display: flex;
     justify-content: center;
 }
+
+#filterSelector{
+    background-color: #707070;
+    color:#F5F5F5;
+}
+
 .hidden {
 display: none;
 }
@@ -227,5 +317,58 @@ display: none;
 h2 {
     font-size: 26px;
 }
+
+/* Hide the images by default */
+.slide {
+  display: none;
+}
+/* Next & previous buttons */
+.prev, .next {
+  cursor: pointer;
+  position: relative;
+  top: 50%;
+  width: auto;
+  margin-top: -22px;
+  padding: 16px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+}
+/* Position the "next button" to the right */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.8);
+}
+/* Number text (1/3 etc) */
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+.active, .dot:hover {
+  background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+  animation-name: fade;
+  animation-duration: 1.5s;
+}
+
+@keyframes fade {
+  from {opacity: .4}
+  to {opacity: 1}
+}
+
 
 
