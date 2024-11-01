@@ -49,6 +49,8 @@ var highlightMarkerOptions = {
 var highlightedLayer = null;
 var geojsonData;
 var namesData;
+// Store references to markers by ID
+var markers = {};
 
 //FILTER VARIABLES
 var uniqueDirectors = new Set();
@@ -79,24 +81,85 @@ var filterIndexing = new Set();
 //SLIDE SHOW FUNCTIONS
 // Next/previous controls
 var slideIndex = 1;
+var timer = null;
+
+function clickNextButton() {
+    document.querySelector('.next').click();
+}
+
 function plusSlides(n) {
+  clearTimeout(timer);
   showSlides(slideIndex += n);
 }
 
 // Thumbnail image controls
 function currentSlide(n) {
+  clearTimeout(timer);
   showSlides(slideIndex = n);
 }
 
+//function showSlides(n) {
+//  var i;
+//  var slides = document.getElementsByClassName("slide");
+//  if (n > slides.length) {
+//    slideIndex = 1
+//  }
+//  if (n < 1) {
+//    slideIndex = slides.length
+//  }
+//  for (i = 0; i < slides.length; i++) {
+//    slides[i].style.display = "none";
+//  }
+//  slides[slideIndex-1].style.display = "block";
+//}
+
+
 function showSlides(n) {
-  let i;
-  let slides = document.getElementsByClassName("slide");
+  var i;
+  var slides = document.getElementsByClassName("slide");
+  if (n==undefined){n = ++slideIndex}
   if (n > slides.length) {slideIndex = 1}
   if (n < 1) {slideIndex = slides.length}
   for (i = 0; i < slides.length; i++) {
-    slides[i].style.display = "none";
+      slides[i].style.display = "none";
   }
   slides[slideIndex-1].style.display = "block";
+  timer = setTimeout(showSlides, 6000);
+  resetHighlight();
+  console.log(n, markers)
+  if (n == 1 | n == 16) {
+  highlightedLayer = markers[1844];
+  } else if (n==2){
+  highlightedLayer = markers[1]
+  }else if (n==3){
+  highlightedLayer = markers[638]
+  }else if (n==4){
+  highlightedLayer = markers[1557]
+  }else if (n==5){
+  highlightedLayer = markers[428]
+  }else if (n==6){
+  highlightedLayer = markers[1520]
+  }else if (n==7){
+  highlightedLayer = markers[2077]
+  }else if (n==8){
+  highlightedLayer = markers[525]
+  }else if (n==9){
+  highlightedLayer = markers[1887]
+  }else if (n==10){
+  highlightedLayer = markers[1757]
+  }else if (n==11){
+  highlightedLayer = markers[19]
+  }else if (n==12){
+  highlightedLayer = markers[1854]
+  }else if (n==13){
+  highlightedLayer = markers[737]
+  }else if (n==14){
+  highlightedLayer = markers[1885]
+  }else if (n==15){
+  highlightedLayer = markers[370]
+  }
+
+  highlightedLayer.setStyle(highlightMarkerOptions);
 }
 
 //TRIAL: POPULATE DROP DOWNS DYNAMICALLY
@@ -218,7 +281,6 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
             return matchesDirector && matchesProdCompany && matchesDistributor && matchesWriter && matchesGenre && matchesStar;
         },
         onEachFeature: function (feature, layer) {
-            // Update unique production companies and directors for the dropdowns
             if (feature.properties.director1_name) {
                 uniqueDirectorsSelected.add(feature.properties.director1_name);
             }
@@ -301,69 +363,77 @@ function sidePanelHome() {
     sidePanel.innerHTML = `
         <h2>San Francisco Films Map</h2>
         <p>Click on any marker to view film details.</p>
-        <div id="slideShowContainer">
+        <div class="slideShowContainer">
             <div class="slide fade">
                 <div class="numbertext">1 / 15</div>
-                <img src="images/_HomePanelImages/BullitChaseIMG.jpg" alt="Image 1" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/BullitChaseIMG.jpg" alt="Image 1">
+                <p>Bullit, 1968</p>
+                <p>Much of the famed Bullit car chase scene was filmed on Taylor Street</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">2 / 15</div>
-                <img src="images/_HomePanelImages/ExperimentInTerror_FishermansWharf.jpeg" alt="Image 2" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/ExperimentInTerror_FishermansWharf.jpeg" alt="Image 2">
+                <p>Experiment in Terror, 1962</p>
+                <p>Blake Edward's thriller noir showing Fisherman's Wharf and Pier 49 back when it was actually used for fishing</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">3 / 15</div>
-                <img src="images/_HomePanelImages/Vertigo_Fort_Point.jpg" alt="Image 3" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/Vertigo_Fort_Point.jpg" alt="Image 3">
+                <p>Vertigo</p>
+                <p>Alfred Hitchcock's '</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">4 / 15</div>
-                <img src="images/_HomePanelImages/AlwaysBeMyMaybe_Pier7.png" alt="Image 4" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/AlwaysBeMyMaybe_Pier7.png" alt="Image 4">
             </div>
             <div class="slide fade">
                 <div class="numbertext">5 / 15</div>
-                <img src="images/_HomePanelImages/ChanIsMissing.png" alt="Image 5" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/ChanIsMissing.png" alt="Image 5">
             </div>
             <div class="slide fade">
                 <div class="numbertext">6 / 15</div>
-                <img src="images/_HomePanelImages/HaroldMaude_SutroBaths.png" alt="Image 6" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/HaroldMaude_SutroBaths.png" alt="Image 6">
             </div>
             <div class="slide fade">
                 <div class="numbertext">7 / 15</div>
-                <img src="images/_HomePanelImages/HERBIERIDESAGAINIMG.jpg" alt="Image 7" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/HERBIERIDESAGAINIMG.jpg" alt="Image 7">
             </div>
             <div class="slide fade">
                 <div class="numbertext">8 / 15</div>
-                <img src="images/_HomePanelImages/houseOnTelegraphHill.jpeg" alt="Image 8" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/houseOnTelegraphHill.jpeg" alt="Image 8">
             </div>
             <div class="slide fade">
                 <div class="numbertext">9 / 15</div>
-                <img src="images/_HomePanelImages/InvasionOfTheBodySnatchers_DeptofHealth.png" alt="Image 9" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/InvasionOfTheBodySnatchers_DeptofHealth.png" alt="Image 9">
             </div>
             <div class="slide fade">
                 <div class="numbertext">10 / 15</div>
-                <img src="images/_HomePanelImages/PlayItAgainSamAirport.png" alt="Image 10" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/PalJoey_SprecklesMansion.jpeg" alt="Image 10">
             </div>
             <div class="slide fade">
                 <div class="numbertext">11 / 15</div>
-                <img src="images/_HomePanelImages/PursuitofHappyness_GlenParkSubway.png" alt="Image 11" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/PursuitofHappyness_GlenParkSubway.png" alt="Image 11">
             </div>
             <div class="slide fade">
                 <div class="numbertext">12 / 15</div>
-                <img src="images/_HomePanelImages/StarTrekGoldenGateBridge.png" alt="Image 12" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/StarTrekGoldenGateBridge.png" alt="Image 12">
             </div>
             <div class="slide fade">
                 <div class="numbertext">13 / 15</div>
-                <img src="images/_HomePanelImages/STEVEMCQUEEN_TaylorSt.jpg" alt="Image 13" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/STEVEMCQUEEN_TaylorSt.jpg" alt="Image 13">
             </div>
             <div class="slide fade">
                 <div class="numbertext">14 / 15</div>
-                <img src="images/_HomePanelImages/TheConversation_FinancialDistrict.jpg" alt="Image 14" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/TheConversation_FinancialDistrict.jpg" alt="Image 14">
             </div>
             <div class="slide fade">
                 <div class="numbertext">15 / 15</div>
-                <img src="images/_HomePanelImages/TheLineUpWarMemoralOpera.jpeg" alt="Image 15" style="width:100%">
+                <img id="homeImage" src="images/_HomePanelImages/TheLineUpWarMemoralOpera.jpeg" alt="Image 15">
             </div>
-            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-            <a class="next"onclick="plusSlides(1)">&#10095;</a>
+            <a class="prev" id="prev" onclick="plusSlides(-1)">&#10094;</a>
+            <a class="next" id="next" onclick="plusSlides(1)">&#10095;</a>
+
+        <div id="slider"></div>
 
         </div>
         <p>Or add a filter</p>
@@ -679,7 +749,7 @@ function showNameDetails(properties, coords, nconst, namesData) {
             <table>
                 <thead>
                     <tr>
-                        <th scope="col" colspan="2">${namesData[nconst].primaryName}</th>
+                        <th class="th-text th-header" scope="col" style= "color:#F5F5F5; font-size:150%; background-color: #707070" colspan="2"><div style= "border: 2px solid #505050;margin: -5pt;">${namesData[nconst].primaryName}</div></th>
                     </tr>
                 </thead>
                 <tbody id="detailsTableBody">
@@ -716,7 +786,9 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
             return L.circleMarker(latlng, defaultMarkerOptions);
         },
         onEachFeature: function (feature, layer) {
-            // Extract director names and add them to the Set
+            if (feature.properties) {
+                markers[feature.properties.unique_id] = layer;
+            }
             if (feature.properties.director1_name) {
                 uniqueDirectors.add(feature.properties.director1_name);
             }
@@ -772,8 +844,6 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
 });
 
 
-
-
 // Prevent map clicks when interacting with the side panel
 document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
     map.dragging.disable();  // Stops event from bubbling to the map
@@ -787,5 +857,4 @@ document.getElementById('sidePanel').addEventListener('mouseout', function(event
     map.touchZoom.enable();
 //    map.scrollWheelZoom.enable() //FIX
 });
-
 
