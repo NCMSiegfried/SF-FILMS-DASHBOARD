@@ -1,4 +1,4 @@
-// Initialize  map
+// INITIALIZE MAP
 var map = L.map('map',{
     zoomControl: false,
     zoomSnap: 0,
@@ -9,25 +9,25 @@ var map = L.map('map',{
     }).setView([37.76, -122.48], 12.5);
 map.scrollWheelZoom = true;
 
-//position zoom buttons on top right
+//POSITION ZOOM BUTTONS: TOP RIGHT
 L.control.zoom({
     position:'topright',
 }).addTo(map);
 
-//Set Map Bounds
+//SET BOUNDS
 var bayAreaBounds = [
     [36.8, -123.3],
     [38.6, -121.5]
 ];
 map.setMaxBounds(bayAreaBounds);
 
-//Add 'smooth dark' tile layer from stadia maps with min zoom
+//TILE LAYER
 L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=8ff5f85d-e7f5-44fa-90bd-df95edd37619', {
   minZoom: 10,
   attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 }).addTo(map);
 
-//create variables for map markers
+//MARKER SYMBOLOGY
 var defaultMarkerOptions = {
     radius: 3,
     fillColor: "#e6409e", //purplish
@@ -36,7 +36,7 @@ var defaultMarkerOptions = {
     opacity: 1,
     fillOpacity: 0.8
 };
-//create highlight colors
+//HIGHLIGHTED MARKER SYMBOLOGY
 var highlightMarkerOptions = {
     radius: 5,
     fillColor: "#ffde21", //yellowish
@@ -45,11 +45,15 @@ var highlightMarkerOptions = {
     opacity: 1,
     fillOpacity: 1
 };
-
+//CREATE VARIABLES
 var highlightedLayer = null;
+var popUpLayer = null;
+var popupContent;
+var popup;
+
 var geojsonData;
 var namesData;
-// Store references to markers by ID
+
 var markers = {};
 
 //FILTER VARIABLES
@@ -75,14 +79,14 @@ var uniqueWritersSelected = new Set();
 var uniqueGenresSelected = new Set();
 var uniqueStarsSelected = new Set();
 
-
+//USED TO ADD FILTER
 var filterIndexing = new Set();
 
-//SLIDE SHOW FUNCTIONS
-// Next/previous controls
+//SLIDE SHOW VARIABLES
 var slideIndex = 1;
 var timer = null;
 
+//SLIDE SHOW FUNCTIONS
 function clickNextButton() {
     document.querySelector('.next').click();
 }
@@ -90,31 +94,13 @@ function clickNextButton() {
 function plusSlides(n) {
   clearTimeout(timer);
   showSlides(slideIndex += n);
+  highlightedLayer.bindPopup(popup).openPopup();
+  console.log(popup);
 }
-
-// Thumbnail image controls
-function currentSlide(n) {
-  clearTimeout(timer);
-  showSlides(slideIndex = n);
-}
-
-//function showSlides(n) {
-//  var i;
-//  var slides = document.getElementsByClassName("slide");
-//  if (n > slides.length) {
-//    slideIndex = 1
-//  }
-//  if (n < 1) {
-//    slideIndex = slides.length
-//  }
-//  for (i = 0; i < slides.length; i++) {
-//    slides[i].style.display = "none";
-//  }
-//  slides[slideIndex-1].style.display = "block";
-//}
-
 
 function showSlides(n) {
+  map.closePopup();
+
   var i;
   var slides = document.getElementsByClassName("slide");
   if (n==undefined){n = ++slideIndex}
@@ -126,43 +112,81 @@ function showSlides(n) {
   slides[slideIndex-1].style.display = "block";
   timer = setTimeout(showSlides, 6000);
   resetHighlight();
-  console.log(n, markers)
-  if (n == 1 | n == 16) {
-  highlightedLayer = markers[1844];
-  } else if (n==2){
-  highlightedLayer = markers[1]
-  }else if (n==3){
-  highlightedLayer = markers[638]
-  }else if (n==4){
-  highlightedLayer = markers[1557]
-  }else if (n==5){
-  highlightedLayer = markers[428]
-  }else if (n==6){
-  highlightedLayer = markers[1520]
-  }else if (n==7){
-  highlightedLayer = markers[2077]
-  }else if (n==8){
-  highlightedLayer = markers[525]
-  }else if (n==9){
-  highlightedLayer = markers[1887]
-  }else if (n==10){
-  highlightedLayer = markers[1757]
-  }else if (n==11){
-  highlightedLayer = markers[19]
-  }else if (n==12){
-  highlightedLayer = markers[1854]
-  }else if (n==13){
-  highlightedLayer = markers[737]
-  }else if (n==14){
-  highlightedLayer = markers[1885]
-  }else if (n==15){
-  highlightedLayer = markers[370]
+  console.log(n)
+  switch (n) {
+      case 1:
+      case 16:
+          highlightedLayer = markers[1844];
+          popupContent = "<img src='images/tt0062765/Image_1.jpg' alt='Image 1' width='150'><br><strong>Location: </strong><p>here</p>";
+          break;
+      case 2:
+          highlightedLayer = markers[1];
+          popupContent = "<img src='images/tt0055972/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 3:
+          highlightedLayer = markers[638];
+          popupContent = "<img src='images/tt0052357/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 4:
+          highlightedLayer = markers[1557];
+          popupContent = "<img src='images/tt7374948/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 5:
+          highlightedLayer = markers[428];
+          popupContent = "<img src='images/tt0083728/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 6:
+          highlightedLayer = markers[1520];
+          popupContent = "<img src='images/tt0067185/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 7:
+          highlightedLayer = markers[2077];
+          popupContent = "<img src='images/tt0071607/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 8:
+          highlightedLayer = markers[525];
+          popupContent = "<img src='images/tt0043660/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 9:
+          highlightedLayer = markers[1887];
+          popupContent = "<img src='images/tt0077745/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 10:
+          highlightedLayer = markers[1757];
+          popupContent = "<img src='images/tt0050815/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 11:
+          highlightedLayer = markers[19];
+          popupContent = "<img src='images/tt0454921/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 12:
+          highlightedLayer = markers[1854];
+          popupContent = "<img src='images/tt0092007/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 13:
+          highlightedLayer = markers[737];
+          popupContent = "<img src='images/tt0062765/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 14:
+          highlightedLayer = markers[1885];
+          popupContent = "<img src='images/tt0071360/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      case 15:
+      case 0:
+          highlightedLayer = markers[370];
+          popupContent = "<img src='images/tt0051866/Image_1.jpg' alt='Image 1' width='150'>";
+          break;
+      default:
+          popupContent = "<img src='images/tt0043660/Image_1.jpg' alt='Image 1' width='150'>";
   }
 
+  popup = new L.Popup({"autoClose": false, "closeOnClick": null, "offset": [0, 20], closeButton: false});
+  popup.setContent(popupContent);
+  highlightedLayer.bindPopup(popup).openPopup();
   highlightedLayer.setStyle(highlightMarkerOptions);
 }
 
-//TRIAL: POPULATE DROP DOWNS DYNAMICALLY
+//POPULATE DROP DOWNS DYNAMICALLY
 function populateDropdown(dropdownId, dataSet, savedValue) {
     const dropdown = document.getElementById(dropdownId);
     const sortedData = Array.from(dataSet).sort();
@@ -201,7 +225,7 @@ function populateDropdown(dropdownId, dataSet, savedValue) {
     }
 }
 
-// Use the function to populate both dropdowns
+// POPULATE ALL DROP DOWNS
 function populateDropDowns() {
     populateDropdown("directorFilter", uniqueDirectors, selectedDirector);
     populateDropdown("prodCompanyFilter", uniqueProdCompanies, selectedProdCompany);
@@ -211,7 +235,7 @@ function populateDropDowns() {
     populateDropdown("starFilter", uniqueStars, selectedStar);
 }
 
-// Function to filter markers based on the selected director or production company
+// FILTER MARKERS FUNCTIONS
 function filterMarkers(director, prodCompany, distributor, writer, genre, star) {
     uniqueProdCompaniesSelected.clear();
     uniqueDirectorsSelected.clear();
@@ -220,22 +244,21 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
     uniqueGenresSelected.clear();
     uniqueStarsSelected.clear()
 
-    // Clear the existing layers before applying the filter
+    // CLEAR EXISTING BEFORE ADDING LAYER
     map.eachLayer(function(layer) {
         if (layer instanceof L.CircleMarker) {
             map.removeLayer(layer);
         }
     });
-    // Add the filtered markers
+    // ADD FILTERED MARKERS
     L.geoJSON(geojsonData, {
         pointToLayer: function (feature, latlng) {
             return L.circleMarker(latlng, defaultMarkerOptions);
         },
         filter: function(feature) {
-            // Show all markers if no filters are selected
+            // SHOW ALL IF NONE SELECTED
             if (!director && !prodCompany && !distributor && !writer && !genre && !star) return true;
 
-            // Check each filter condition independently
             let matchesDirector = true;
             let matchesProdCompany = true;
             let matchesDistributor = true;
@@ -243,22 +266,15 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
             let matchesGenre = true;
             let matchesStar = true;
 
-            // Check for director match if a director is specified
             if (director) {
                 matchesDirector = feature.properties.director1_name === director || feature.properties.director2_name === director;
             }
-
-            // Check for production company match if a production company is specified
             if (prodCompany) {
                 matchesProdCompany = feature.properties["Production Company"] === prodCompany;
             }
-
-            // Check for distributor match if a distributor is specified
             if (distributor) {
                 matchesDistributor = feature.properties.Distributor === distributor;
             }
-
-            // Check for writer match if a writer is specified
             if (writer) {
                 matchesWriter = feature.properties.writer1_name === writer ||
                                 feature.properties.writer2_name === writer ||
@@ -277,7 +293,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
                     feature['properties']['Actor 3'] === star;
                 console.log(star)
             }
-            // Return true only if all specified filters match
+            // SHOW POINTS WITH ALL FILTERS APPLIED
             return matchesDirector && matchesProdCompany && matchesDistributor && matchesWriter && matchesGenre && matchesStar;
         },
         onEachFeature: function (feature, layer) {
@@ -314,7 +330,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
             if (feature['properties']['Actor 3']) {
                 uniqueWritersSelected.add(feature['properties']['Actor 3']);
             }
-            // Add click event to highlight the marker and update the side panel
+            // ADD CLICK TO HIGHLIGHT AND UPDATE SIDE PANEL
             layer.on('click', function () {
                 resetHighlight();
                 highlightedLayer = layer;
@@ -326,7 +342,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
         }
     }).addTo(map);
 
-    // Update dropdowns with the unique values collected
+    // UPDATE DROPDOWNS DYNAMICALLY
     populateDropdown("prodCompanyFilter", uniqueProdCompaniesSelected, selectedProdCompany);
     populateDropdown("directorFilter", uniqueDirectorsSelected, selectedDirector);
     populateDropdown("distributorFilter", uniqueDistributorsSelected, selectedDistributor);
@@ -334,7 +350,7 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
     populateDropdown("genreFilter", uniqueGenresSelected, selectedGenre);
     populateDropdown("starFilter", uniqueStarsSelected, selectedStar);
 
-    // Log the updated sets for debugging
+    // USED FOR DEBUGGING
     console.log("Filtered Production Companies:", uniqueProdCompaniesSelected);
     console.log("Filtered Directors:", uniqueDirectorsSelected);
     console.log("Filtered Distributor:", uniqueDistributorsSelected);
@@ -343,21 +359,19 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
     console.log("Filtered Star:", uniqueStarsSelected);
 }
 
-// Function to reset the highlight of all markers
 function resetHighlight() {
     if (highlightedLayer) {
         highlightedLayer.setStyle(defaultMarkerOptions);
         highlightedLayer = null;
     }
 }
-//function for pop up
-function onEachFeature(feature, layer) {
-    if (feature.properties && feature.properties.popupContent) {
-        layer.bindPopup(feature.properties.popupContent);
-    }
-}
+//function onEachFeature(feature, layer) {
+//    if (feature.properties && feature.properties.popupContent) {
+//        layer.bindPopup(feature.properties.popupContent);
+//    }
+//}
 
-// Function to update the side panel with default content on page load
+// UPDATE HOME SIDE PANEL FUNCTION
 function sidePanelHome() {
     var sidePanel = document.getElementById('sidePanel');
     sidePanel.innerHTML = `
@@ -444,9 +458,7 @@ function sidePanelHome() {
             </select>
             <select class= "dropdown hidden" id="distributorFilter">
             </select>
-            </select>
             <select class= "dropdown hidden" id="writerFilter">
-            </select>
             </select>
             <select class= "dropdown hidden" id="genreFilter">
             </select>
@@ -519,14 +531,15 @@ function sidePanelHome() {
     document.getElementById('filterSelector').addEventListener('change', function() {
         const selectedValue = this.value;
         const selectedDropdown = document.getElementById(selectedValue);
-        //Show filter and append it to filterContainer div
+        //SHOW FILTER, APPEND TO FILTER CONTAINER DIV SO SHOWS ON BOTTOM
         document.getElementById(selectedValue).style.display = 'block';
         document.getElementById('filterContainer').appendChild(selectedDropdown);
-        // add selected value to 'filterIndexing' set to reload filters when back button is pressed
+        // RELOAD FILTERS WHEN GOING BACK TO HOME
         filterIndexing.add(selectedValue);
-        // remove selected value from the filterSelector
+        // REMOVE SELECTED FILTER FROM FILTER SELECTOR
         this.querySelector(`option[value="${selectedValue}"]`).remove();
     });
+    clearTimeout(timer);
     showSlides(slideIndex);
 }
 
@@ -553,7 +566,7 @@ function updateSidePanel(properties, coords, namesData) {
         </div>
     `;
     appendMovieTable(properties);
-    // Adding event listeners for directors links
+    // DIRECTOR AND ACTOR LINKS
     document.querySelectorAll('.director-link').forEach(function(element) {
         element.addEventListener('click', function() {
             var nconst = this.getAttribute('data-nconst');
@@ -567,17 +580,16 @@ function updateSidePanel(properties, coords, namesData) {
         });
     });
 
-    // Add event listener to the "More Information" button
+    // MORE INFORMATION BUTTON
     document.getElementById('MoreInfoButton').addEventListener('click', function() {
-        // Hide the "More Information" button
+        // HIDE BUTTON WHEN CLICKED
         this.style.display = 'none';
-        // Show additional details in the side panel
+        // SHOW ADDITION DETAILS WHEN CLICKED
         showMoreDetails(properties, coords, namesData);
     });
 
-    // Add event listener to the "Back" button
+    // BACK BUTTON
     document.getElementById('back-button').addEventListener('click', function() {
-        // Go back to the default side panel content
         sidePanelHome();
         resetHighlight();
     });
@@ -636,7 +648,7 @@ function showMoreDetails(properties, coords, namesData) {
 
     var tableBody = document.getElementById('detailsTableBody');
 
-    // Function to add a new row with slide-down animation
+    // FUNCTION TO ADD NEW ROW
     function addRowWithSlideDown(label, value, delay, idx) {
         var row = tableBody.insertRow();
         var cell1 = row.insertCell(0);
@@ -678,7 +690,7 @@ function showMoreDetails(properties, coords, namesData) {
         addRowWithSlideDown("Writer(s)", writerNames);
     }
 
-    // Adding event listeners for writers links
+    // ADD LINKS TO WRITERS
     document.querySelectorAll('.writer-link').forEach(function(element) {
         element.addEventListener('click', function() {
             var nconst = this.getAttribute('data-nconst');
@@ -686,9 +698,8 @@ function showMoreDetails(properties, coords, namesData) {
         });
     });
 
-    // Add event listener to the "Back" button
+    // BACK BUTTON EVENT LISTENER
     document.getElementById('back-button').addEventListener('click', function() {
-        // Go back to the previous state of the side panel
         sidePanelHome();
         resetHighlight();
     });
@@ -736,7 +747,7 @@ function appendNameTable(nconst, namesData) {
 }
 
 function showNameDetails(properties, coords, nconst, namesData) {
-    // Check if the nconst exists in namesData and access the primaryName
+    // CHECK IF NCONST EXISTS
     if (namesData[nconst]) {
         var sidePanel = document.getElementById('sidePanel');
         sidePanel.innerHTML = `
@@ -758,9 +769,8 @@ function showNameDetails(properties, coords, nconst, namesData) {
         `;
         appendNameTable(nconst, namesData);
 
-        // Add event listener to the "Back" button
+        // BACK BUTTON EVENT LISTENER
         document.getElementById('back-button').addEventListener('click', function() {
-            // Go back to the previous side panel state with film details
             updateSidePanel(properties, coords, namesData);
             document.getElementById( 'MoreInfoButton' ).style.display = 'none';
             showMoreDetails(properties, coords, namesData);
@@ -769,7 +779,7 @@ function showNameDetails(properties, coords, nconst, namesData) {
         console.error("Director details not found for nconst:", nconst);
     }
 }
-// Load the additional JSON file
+// LOAD NAMES DATA JSON
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/refs/heads/main/map/data/Names.json", function(data) {
     namesData = data;
     console.log("Additional data loaded:", namesData);
@@ -777,10 +787,10 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/ref
     console.error('Error loading JSON: ' + textStatus, errorThrown);
 });
 
-// Load GeoJSON from github, pass data through functions
+// LOAD GEOJSON
 $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/main/map/data/data.geojson", function(data) {
     geojsonData = data;
-    // Load GeoJSON data into the map
+
     var geojsonLayer = L.geoJSON(data, {
         pointToLayer: function (feature, latlng) {
             return L.circleMarker(latlng, defaultMarkerOptions);
@@ -826,14 +836,15 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
             if (feature["properties"]["Actor 3"]) {
                 uniqueStars.add(feature["properties"]["Actor 3"]);
             }
-            // Attach click event listener to each feature (point)
+            // ADD EVENT LISTENER TO EACH FEATURE
             layer.on('click', function () {
-                resetHighlight(); // Reset highlight of previously selected marker
-                highlightedLayer = layer; // Set the currently clicked layer as highlighted
+                map.closePopup();
+                resetHighlight();
+                highlightedLayer = layer;
                 layer.setStyle(highlightMarkerOptions);
                 var coords = feature.geometry.coordinates;
                 var properties = feature.properties;
-                // Update the side panel when the point is clicked
+                // UPDATE SIDE PANEL WHEN POINT IS CLICKED
                 updateSidePanel(properties, coords, namesData);
             });
         }
@@ -844,17 +855,16 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
 });
 
 
-// Prevent map clicks when interacting with the side panel
+// PREVENT MAP CLICKS WHEN OVER SIDE PANEL
 document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
-    map.dragging.disable();  // Stops event from bubbling to the map
+    map.dragging.disable();
     map.doubleClickZoom.disable();
     map.touchZoom.disable();
 });
-// Enable map clicks again when mouse is outside of panel
+// ENABLE MAP CLICKS WHEN NOT ON SIDE PANEL
 document.getElementById('sidePanel').addEventListener('mouseout', function(event) {
-    map.dragging.enable();  // Stops event from bubbling to the map
+    map.dragging.enable();
     map.doubleClickZoom.enable();
     map.touchZoom.enable();
 //    map.scrollWheelZoom.enable() //FIX
 });
-
