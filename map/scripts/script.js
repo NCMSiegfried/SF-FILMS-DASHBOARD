@@ -110,14 +110,14 @@ function showSlides(n) {
       slides[i].style.display = "none";
   }
   slides[slideIndex-1].style.display = "block";
-  timer = setTimeout(showSlides, 6000);
+  timer = setTimeout(showSlides, 8000);
   resetHighlight();
   console.log(n)
   switch (n) {
       case 1:
       case 16:
           highlightedLayer = markers[1844];
-          popupContent = "<img src='images/tt0062765/Image_1.jpg' alt='Image 1' width='150'><br><strong>Location: </strong><p>here</p>";
+          popupContent = "<img src='images/tt0062765/Image_1.jpg' alt='Image 1' width='150'>";
           break;
       case 2:
           highlightedLayer = markers[1];
@@ -180,7 +180,7 @@ function showSlides(n) {
           popupContent = "<img src='images/tt0043660/Image_1.jpg' alt='Image 1' width='150'>";
   }
 
-  popup = new L.Popup({"autoClose": false, "closeOnClick": null, "offset": [0, 20], closeButton: false});
+  popup = new L.Popup({"autoPan":false,"autoClose": false, "closeOnClick": null, "offset": [0, 20], closeButton: false});
   popup.setContent(popupContent);
   highlightedLayer.bindPopup(popup).openPopup();
   highlightedLayer.setStyle(highlightMarkerOptions);
@@ -297,6 +297,9 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
             return matchesDirector && matchesProdCompany && matchesDistributor && matchesWriter && matchesGenre && matchesStar;
         },
         onEachFeature: function (feature, layer) {
+            if (feature.properties) {
+                markers[feature.properties.unique_id] = layer;
+            }
             if (feature.properties.director1_name) {
                 uniqueDirectorsSelected.add(feature.properties.director1_name);
             }
@@ -380,69 +383,108 @@ function sidePanelHome() {
         <div class="slideShowContainer">
             <div class="slide fade">
                 <div class="numbertext">1 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/BullitChaseIMG.jpg" alt="Image 1">
-                <p>Bullit, 1968</p>
-                <p>Much of the famed Bullit car chase scene was filmed on Taylor Street</p>
+                <img id="homeImage" src="images/_HomePanelImages/BullitChaseIMG.jpg" alt="Image 1" onclick="ExpandImage('images/_HomePanelImages/BullitChaseIMG.jpg')">
+                </br>
+                <strong>Bullit, 1968</strong>
+                <p>The best ever car chase scene? Debatable.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">2 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/ExperimentInTerror_FishermansWharf.jpeg" alt="Image 2">
-                <p>Experiment in Terror, 1962</p>
-                <p>Blake Edward's thriller noir showing Fisherman's Wharf and Pier 49 back when it was actually used for fishing</p>
+                <img id="homeImage" src="images/_HomePanelImages/ExperimentInTerror_FishermansWharf.jpeg" alt="Image 2" onclick="ExpandImage('images/_HomePanelImages/ExperimentInTerror_FishermansWharf.jpeg')">
+                </br>
+                <strong>Experiment in Terror, 1962</strong>
+                <p>Blake Edward's thriller noir showing Fisherman's Wharf and Pier 49 back when it was actually used for fishing.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">3 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/Vertigo_Fort_Point.jpg" alt="Image 3">
-                <p>Vertigo</p>
-                <p>Alfred Hitchcock's '</p>
+                <img id="homeImage" src="images/_HomePanelImages/Vertigo_Fort_Point.jpg" alt="Image 3" onclick="ExpandImage('images/_HomePanelImages/Vertigo_Fort_Point.jpg')">
+                </br>
+                <strong>Vertigo, 1958</strong>
+                <p>James Stewart Heroically lifting Kim Novak out from the San Francisco Bay Waters.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">4 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/AlwaysBeMyMaybe_Pier7.png" alt="Image 4">
+                <img id="homeImage" src="images/_HomePanelImages/AlwaysBeMyMaybe_Pier7.png" alt="Image 4" onclick="ExpandImage('images/_HomePanelImages/AlwaysBeMyMaybe_Pier7.png')">
+                </br>
+                <strong>Always Be My Maybe, 2019</strong>
+                <p>Ali Wong and Randall Park star in this romance... Maybe?</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">5 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/ChanIsMissing.png" alt="Image 5">
+                <img id="homeImage" src="images/_HomePanelImages/ChanIsMissing.png" alt="Image 5" onclick="ExpandImage('images/_HomePanelImages/ChanIsMissing.png')">
+                </br>
+                <strong>Chan is Missing, 1982</strong>
+                <p>This Imperial Palace Restaurant (Previously the Golden Dragon Restaurant) has a had a gang-related shooting killing 5 and injuring 11 (1977), was temporarilly shut down in 2006 for health code violations, and currently holds a 2.9 star rating on Google.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">6 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/HaroldMaude_SutroBaths.png" alt="Image 6">
+                <img id="homeImage" src="images/_HomePanelImages/HaroldMaude_SutroBaths.png" alt="Image 6" onclick="ExpandImage('images/_HomePanelImages/HaroldMaude_SutroBaths.png')">
+                </br>
+                <strong>Harold and Maude, 1971</strong>
+                <p>"Crazy parasite! Commie Bastard! Get the hell out of here!" - Harold</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">7 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/HERBIERIDESAGAINIMG.jpg" alt="Image 7">
+                <img id="homeImage" src="images/_HomePanelImages/HERBIERIDESAGAINIMG.jpg" alt="Image 7" onclick="ExpandImage('images/_HomePanelImages/HERBIERIDESAGAINIMG.jpg')">
+                </br>
+                <strong>Herbie Rides Again, 1974</strong>
+                <p>Mrs.Steinmetz taking her shortcut to Vern's Market while Mr.Hawk's henchmen follow closely behind, on foot.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">8 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/houseOnTelegraphHill.jpeg" alt="Image 8">
+                <img id="homeImage" src="images/_HomePanelImages/houseOnTelegraphHill.jpeg" alt="Image 8" onclick="ExpandImage('images/_HomePanelImages/houseOnTelegraphHill.jpeg')">
+                </br>
+                <strong>House on Telegraph Hill, 1951</strong>
+                <p>The base of Coit Tower - one of the best views of the City?</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">9 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/InvasionOfTheBodySnatchers_DeptofHealth.png" alt="Image 9">
+                <img id="homeImage" src="images/_HomePanelImages/InvasionOfTheBodySnatchers_DeptofHealth.png" alt="Image 9" onclick="ExpandImage('images/_HomePanelImages/InvasionOfTheBodySnatchers_DeptofHealth.png')">
+                </br>
+                <strong>Invasion of the Body Snatchers, 1978</strong>
+                <p>Brooke Adams going into the Department of Public Health building before the Aliens start replacing people's bodies.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">10 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/PalJoey_SprecklesMansion.jpeg" alt="Image 10">
+                <img id="homeImage" src="images/_HomePanelImages/PalJoey_SprecklesMansion.jpeg" alt="Image 10" onclick="ExpandImage('images/_HomePanelImages/PalJoey_SprecklesMansion.jpeg')">
+                </br>
+                <strong>Pal Joey, 1957</strong>
+                <p>Frank Sinatra and Kim Novak's stroll up Pacific Heights.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">11 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/PursuitofHappyness_GlenParkSubway.png" alt="Image 11">
+                <img id="homeImage" src="images/_HomePanelImages/PursuitofHappyness_GlenParkSubway.png" alt="Image 11" onclick="ExpandImage('images/_HomePanelImages/PursuitofHappyness_GlenParkSubway.png')">
+                </br>
+                <strong>The Pursuit of Happyness, 2006</strong>
+                <p>Known for its brutalist architecture: Glen Park Subway Station.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">12 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/StarTrekGoldenGateBridge.png" alt="Image 12">
+                <img id="homeImage" src="images/_HomePanelImages/StarTrekGoldenGateBridge.png" alt="Image 12" onclick="ExpandImage('images/_HomePanelImages/StarTrekGoldenGateBridge.png')">
+                </br>
+                <strong>Star Trek IV: The Voyage Home, 1986</strong>
+                <p>Spock (Leonard Nimoy) and Kirk (William Shatner) travel back in time to save humanity and locate humpback whales.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">13 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/STEVEMCQUEEN_TaylorSt.jpg" alt="Image 13">
+                <img id="homeImage" src="images/_HomePanelImages/STEVEMCQUEEN_TaylorSt.jpg" alt="Image 13" onclick="ExpandImage('images/_HomePanelImages/STEVEMCQUEEN_TaylorSt.jpg')">
+                </br>
+                <strong>Bullit, 1968</strong>
+                <p>A popular area on Nob Hill which include film locations for San Andreas (2015), Hereafter (2010), and The Wedding Planner (2001).</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">14 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/TheConversation_FinancialDistrict.jpg" alt="Image 14">
+                <img id="homeImage" src="images/_HomePanelImages/TheConversation_FinancialDistrict.jpg" alt="Image 14" onclick="ExpandImage('images/_HomePanelImages/TheConversation_FinancialDistrict.jpg')">
+                </br>
+                <strong>The Conversation, 1974</strong>
+                <p>Harry Caul (Gene Hackman) and Martin Stett (Harrison Ford) overlooking the Financial District.</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">15 / 15</div>
-                <img id="homeImage" src="images/_HomePanelImages/TheLineUpWarMemoralOpera.jpeg" alt="Image 15">
+                <img id="homeImage" src="images/_HomePanelImages/TheLineUpWarMemoralOpera.jpeg" alt="Image 15" onclick="ExpandImage('images/_HomePanelImages/TheLineUpWarMemoralOpera.jpeg')">
+                </br>
+                <strong>The Lineup, 1958</strong>
+                <p>Lieutenant Guthrie using a police call box back in the day.</p>
             </div>
             <a class="prev" id="prev" onclick="plusSlides(-1)">&#10094;</a>
             <a class="next" id="next" onclick="plusSlides(1)">&#10095;</a>
@@ -515,6 +557,7 @@ function sidePanelHome() {
         selectedGenre = null;
         selectedStar = null;
         populateDropDowns();
+        markers = {}
         filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     if (selectedDirector || selectedProdCompany || selectedDistributor || selectedWriter || selectedGenre || selectedStar){
@@ -854,6 +897,34 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
     console.error('Error loading GeoJSON file');
 });
 
+//EXPAND SLIDESHOW IMAGE
+function ExpandImage(imgsrc) {
+  //document.getElementById("expandImage").style.display = 'block';
+  const imageContainer = document.getElementById("expandImage");
+  imageContainer.style.display = 'block';
+
+  // Remove any existing content
+  imageContainer.innerHTML = "";
+
+  // Create a new image element
+  const img = document.createElement("img");
+  img.src = imgsrc; // Set the image source to the selected file
+  // Create a close button
+  const closeButton = document.createElement("button");
+  closeButton.innerHTML = "&times;"; // "×" symbol
+  closeButton.className = "closeButton";
+  closeButton.onclick = () => {
+    imageContainer.style.display = 'none';
+  };
+  // Append the image to the container
+  imageContainer.appendChild(img);
+  imageContainer.appendChild(closeButton);
+}
+
+function exitExpansion(){
+  const imageContainer = document.getElementById("expandImage");
+  imageContainer.style.display = 'none';
+}
 
 // PREVENT MAP CLICKS WHEN OVER SIDE PANEL
 document.getElementById('sidePanel').addEventListener('mouseover', function(event) {
@@ -863,6 +934,20 @@ document.getElementById('sidePanel').addEventListener('mouseover', function(even
 });
 // ENABLE MAP CLICKS WHEN NOT ON SIDE PANEL
 document.getElementById('sidePanel').addEventListener('mouseout', function(event) {
+    map.dragging.enable();
+    map.doubleClickZoom.enable();
+    map.touchZoom.enable();
+//    map.scrollWheelZoom.enable() //FIX
+});
+
+// PREVENT MAP CLICKS WHEN OVER SIDE PANEL
+document.getElementById('expandImage').addEventListener('mouseover', function(event) {
+    map.dragging.disable();
+    map.doubleClickZoom.disable();
+    map.touchZoom.disable();
+});
+// ENABLE MAP CLICKS WHEN NOT ON SIDE PANEL
+document.getElementById('expandImage').addEventListener('mouseout', function(event) {
     map.dragging.enable();
     map.doubleClickZoom.enable();
     map.touchZoom.enable();
