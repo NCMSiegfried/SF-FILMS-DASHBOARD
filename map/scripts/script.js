@@ -1,3 +1,6 @@
+
+var key = config.STADIA_MAPS;
+
 // INITIALIZE MAP
 var map = L.map('map',{
     zoomControl: false,
@@ -22,7 +25,7 @@ var bayAreaBounds = [
 map.setMaxBounds(bayAreaBounds);
 
 //TILE LAYER
-L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=8ff5f85d-e7f5-44fa-90bd-df95edd37619', {
+L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key='+ key, {
   minZoom: 10,
   attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
 }).addTo(map);
