@@ -46,6 +46,23 @@ var highlightMarkerOptions = {
     opacity: 1,
     fillOpacity: 1
 };
+var transparentMarkerOptions = {
+    radius: 3,
+    fillColor: "#8c2760", //dark purple
+    color: "#000",
+    weight: 1,
+    opacity: 0.3,
+    fillOpacity: 0.3
+};
+
+var otherMarkerOptions = {
+    radius: 3,
+    fillColor: "#ff199b", //bright pink
+    color: "#bfa719",
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 1
+};
 //CREATE VARIABLES
 var highlightedLayer = null;
 var popUpLayer = null;
@@ -56,7 +73,7 @@ var geojsonData;
 var namesData;
 
 var markers = {};
-
+var filteredPoints = [];
 //FILTER VARIABLES
 var uniqueDirectors = new Set();
 var uniqueProdCompanies = new Set();
@@ -337,8 +354,11 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
             // ADD CLICK TO HIGHLIGHT AND UPDATE SIDE PANEL
             layer.on('click', function () {
                 resetHighlight();
+                resetTransparency();
+                transparentNonMatchingMarkers(layer.feature.properties.Title);
                 highlightedLayer = layer;
                 layer.setStyle(highlightMarkerOptions);
+                console.log(markers)
                 var coords = feature.geometry.coordinates;
                 var properties = feature.properties;
                 updateSidePanel(properties, coords, namesData);
@@ -578,6 +598,7 @@ function sidePanelHome() {
     });
     clearTimeout(timer);
     showSlides(slideIndex);
+    resetTransparency();
 }
 
 function updateSidePanel(properties, coords, namesData) {
@@ -877,8 +898,11 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
             layer.on('click', function () {
                 map.closePopup();
                 resetHighlight();
+                resetTransparency();
+                transparentNonMatchingMarkers(layer.feature.properties.Title);
                 highlightedLayer = layer;
                 layer.setStyle(highlightMarkerOptions);
+                console.log(filteredPoints)
                 var coords = feature.geometry.coordinates;
                 var properties = feature.properties;
                 // UPDATE SIDE PANEL WHEN POINT IS CLICKED
@@ -891,6 +915,21 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
     console.error('Error loading GeoJSON file');
 });
 
+function transparentNonMatchingMarkers(title) {
+    for (const key in markers) {
+        if (markers[key].feature.properties.Title !== title) {
+        markers[key].setStyle(transparentMarkerOptions); // Highlight matching markers
+        } else {
+        filteredPoints.push(markers[key])
+        markers[key].setStyle(otherMarkerOptions);
+        }
+    };
+}
+function resetTransparency() {
+    for (const key in markers) {
+        markers[key].setStyle(defaultMarkerOptions);
+    };
+}
 //EXPAND SLIDESHOW IMAGE
 function ExpandImage(imgsrc) {
   //document.getElementById("expandImage").style.display = 'block';
