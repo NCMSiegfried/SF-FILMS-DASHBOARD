@@ -477,5 +477,14 @@ color = white;
     color: white !important;
     background-color: rgba(80,80,80,0.6);
 }
+.writer-link {
+    color: #5d6ff5;
+}
+.director-link {
+    color: #5d6ff5;
+}
+.actor-link {
+    color: #5d6ff5;
+}
 
 

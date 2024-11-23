@@ -71,9 +71,10 @@ var popup;
 
 var geojsonData;
 var namesData;
+var titleLayer;
 
 var markers = {};
-var filteredPoints = [];
+var titlePoints = [];
 //FILTER VARIABLES
 var uniqueDirectors = new Set();
 var uniqueProdCompanies = new Set();
@@ -353,12 +354,14 @@ function filterMarkers(director, prodCompany, distributor, writer, genre, star) 
             }
             // ADD CLICK TO HIGHLIGHT AND UPDATE SIDE PANEL
             layer.on('click', function () {
+                titlePoints = [];
                 resetHighlight();
                 resetTransparency();
                 transparentNonMatchingMarkers(layer.feature.properties.Title);
                 highlightedLayer = layer;
                 layer.setStyle(highlightMarkerOptions);
                 console.log(markers)
+                reloadFilteredLayer(titlePoints)
                 var coords = feature.geometry.coordinates;
                 var properties = feature.properties;
                 updateSidePanel(properties, coords, namesData);
@@ -394,7 +397,7 @@ function sidePanelHome() {
                 <img id="homeImage" src="images/_HomePanelImages/BullitChaseIMG.jpg" alt="Image 1" onclick="ExpandImage('images/_HomePanelImages/BullitChaseIMG.jpg')">
                 </br>
                 <strong>Bullit, 1968</strong>
-                <p>The best ever car chase scene? Debatable.</p>
+                <p>The best ever car chase scene?</p>
             </div>
             <div class="slide fade">
                 <div class="numbertext">2 / 15</div>
@@ -559,7 +562,6 @@ function sidePanelHome() {
         selectedStar = this.value;
         filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
-    const filterList = ['directorFilter', 'prodCompanyFilter', 'distributorFilter', 'writerFilter', 'genreFilter', 'starFilter'];
     document.getElementById('reset-filter').addEventListener('click', function() {
         selectedDirector = null;
         selectedProdCompany = null;
@@ -569,9 +571,6 @@ function sidePanelHome() {
         selectedStar = null;
         populateDropDowns();
         markers = {}
-        for (const item of filterList) {
-            document.getElementById(item).style.display = 'none';
-            }
         filterMarkers(selectedDirector, selectedProdCompany, selectedDistributor, selectedWriter, selectedGenre, selectedStar);
     });
     if (selectedDirector || selectedProdCompany || selectedDistributor || selectedWriter || selectedGenre || selectedStar){
@@ -599,6 +598,9 @@ function sidePanelHome() {
     clearTimeout(timer);
     showSlides(slideIndex);
     resetTransparency();
+    if (titleLayer) {
+        map.removeLayer(titleLayer);
+    }
 }
 
 function updateSidePanel(properties, coords, namesData) {
@@ -896,13 +898,15 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
             }
             // ADD EVENT LISTENER TO EACH FEATURE
             layer.on('click', function () {
+                titlePoints = [];
                 map.closePopup();
                 resetHighlight();
                 resetTransparency();
                 transparentNonMatchingMarkers(layer.feature.properties.Title);
                 highlightedLayer = layer;
                 layer.setStyle(highlightMarkerOptions);
-                console.log(filteredPoints)
+                console.log(titlePoints)
+                reloadFilteredLayer(titlePoints)
                 var coords = feature.geometry.coordinates;
                 var properties = feature.properties;
                 // UPDATE SIDE PANEL WHEN POINT IS CLICKED
@@ -914,17 +918,34 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
 }).fail(function() {
     console.error('Error loading GeoJSON file');
 });
-
+//TURNS OTHER POINTS WITHOUT MATCHING TITLE TRANSPARENT AND SAVES POINTS WITH MATCHING TITLE IN "titlePoints" array
 function transparentNonMatchingMarkers(title) {
     for (const key in markers) {
         if (markers[key].feature.properties.Title !== title) {
         markers[key].setStyle(transparentMarkerOptions); // Highlight matching markers
         } else {
-        filteredPoints.push(markers[key])
-        markers[key].setStyle(otherMarkerOptions);
+        titlePoints.push(markers[key])
         }
     };
 }
+// Function to reload a new layer with the filtered points
+function reloadFilteredLayer(titlePoints) {
+    // Remove existing filtered layer if present
+    if (titleLayer) {
+        map.removeLayer(titleLayer);
+    }
+
+    // Create a new layer group for the filtered points
+    titleLayer = L.layerGroup(
+        titlePoints.map(marker =>
+            L.circleMarker(marker.getLatLng(), otherMarkerOptions, {interactive:false})
+            )
+        );
+
+    // Add the new layer to the map
+    titleLayer.addTo(map);
+}
+//RESET TRANSPARENT LAYER
 function resetTransparency() {
     for (const key in markers) {
         markers[key].setStyle(defaultMarkerOptions);
