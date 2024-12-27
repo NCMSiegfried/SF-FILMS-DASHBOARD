@@ -65,6 +65,7 @@ var otherMarkerOptions = {
 };
 //CREATE VARIABLES
 var highlightedLayer = null;
+var highlightedLayer2 = null;
 var popUpLayer = null;
 var popupContent;
 var popup;
@@ -203,6 +204,7 @@ function showSlides(n) {
   popup.setContent(popupContent);
   highlightedLayer.bindPopup(popup).openPopup();
   highlightedLayer.setStyle(highlightMarkerOptions);
+  highlightedLayer.bringToFront();
 }
 
 //POPULATE DROP DOWNS DYNAMICALLY
@@ -383,14 +385,21 @@ function resetHighlight() {
         highlightedLayer.setStyle(defaultMarkerOptions);
         highlightedLayer = null;
     }
+    if (highlightedLayer2) {
+        highlightedLayer2.setStyle(otherMarkerOptions);
+        highlightedLayer2 = null;
+    }
 }
 
 // UPDATE HOME SIDE PANEL FUNCTION
 function sidePanelHome() {
     var sidePanel = document.getElementById('sidePanel');
     sidePanel.innerHTML = `
-        <h2>San Francisco Films Map</h2>
-        <p style="color: white;">Click on any marker to view film details.</p>
+        <div id="svg-container" style="width: 100%; height: auto;">
+            <object type="image/svg+xml" data="assets/svg/side_panel_title.svg" style="width: 100%; height: auto;"></object>
+        </div>
+        <hr style="border: none; height: 1px; background: black; margin: 20px 0;">
+        </br>
         <div class="slideShowContainer">
             <div class="slide fade">
                 <div class="numbertext">1 / 15</div>
@@ -504,6 +513,7 @@ function sidePanelHome() {
 
         </div>
         </br>
+        <p style="color: white;">Click on any marker to view film details.</p>
         <p style="color: white;">Or add a filter</p>
         <div id="filterContainer">
             <select class= "dropdown hidden" id="directorFilter">
@@ -903,9 +913,9 @@ $.getJSON("https://raw.githubusercontent.com/NCMSiegfried/SF-FILMS-DASHBOARD/mai
                 resetHighlight();
                 resetTransparency();
                 transparentNonMatchingMarkers(layer.feature.properties.Title);
-                highlightedLayer = layer;
                 layer.setStyle(highlightMarkerOptions);
                 console.log(titlePoints)
+                highlightedLayer = layer;
                 reloadFilteredLayer(titlePoints)
                 var coords = feature.geometry.coordinates;
                 var properties = feature.properties;
@@ -937,14 +947,38 @@ function reloadFilteredLayer(titlePoints) {
 
     // Create a new layer group for the filtered points
     titleLayer = L.layerGroup(
-        titlePoints.map(marker =>
-            L.circleMarker(marker.getLatLng(), otherMarkerOptions, {interactive:false})
-            )
-        );
+        titlePoints.map(marker => {
+            const markerId = marker.feature.properties.unique_id;
+            const isSelected = markerId === highlightedLayer.feature.properties.unique_id;
+            //const markerSymbol = isSelected ? highlightMarkerOptions : otherMarkerOptions;
+            // Create a circle marker with interactivity enabled
+            const circleMarker = L.circleMarker(marker.getLatLng(), otherMarkerOptions);
+            if (isSelected) {
+                highlightedLayer2 = circleMarker;
+                highlightedLayer2.setStyle(highlightMarkerOptions);
+                console.log(highlightedLayer2)
+
+            }
+            // Add click event listener
+            circleMarker.on('click', () => {
+                console.log(highlightedLayer2)
+                //highlightedLayer2.setStyle(otherMarkerOptions);
+                resetHighlight();
+                highlightedLayer2 = circleMarker;
+                const coords = marker.getLatLng();
+                const properties = marker.feature.properties;
+                updateSidePanel(properties, coords, namesData);
+                circleMarker.setStyle(highlightMarkerOptions);
+            });
+
+            return circleMarker;
+        })
+    );
 
     // Add the new layer to the map
     titleLayer.addTo(map);
 }
+
 //RESET TRANSPARENT LAYER
 function resetTransparency() {
     for (const key in markers) {
